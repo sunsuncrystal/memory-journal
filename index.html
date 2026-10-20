@@ -101,8 +101,33 @@ h3{font-size:1rem;margin:.8rem 0 .3rem}
 #dot{width:min(72vw,320px);height:min(72vw,320px);border-radius:50%;border:0;background:var(--line);color:var(--ink);font-size:1.7rem;font-weight:800}
 #dot.go{background:#1F9D55;color:#fff}
 /* family & doctor (denser, for adults reading a report) */
-#sc-family{font-size:.86rem}
-#sc-family button{font-size:.95rem}
+.fam{font-size:.88rem}
+.fam button{font-size:.95rem}
+.fam .bar h1{font-size:1.2rem}
+.lbl{font-weight:700;margin:.8rem 0 .3rem}
+.group{margin:20px 0 6px;padding-left:8px;font-size:.78rem;font-weight:700;color:var(--soft);letter-spacing:.02em}
+.list{background:var(--card);border:2px solid var(--line);border-radius:18px;overflow:hidden}
+.list.flat{border:0;border-radius:0;background:transparent}
+.li{display:flex;align-items:center;gap:12px;width:100%;min-height:3.7rem;border:0;border-top:1.5px solid var(--line);border-radius:0;background:transparent;text-align:left;padding:.55rem .9rem;font-weight:700}
+.li:first-child{border-top:0}
+.li:active{transform:none;background:var(--okBg)}
+.li .ico{width:2.3rem;height:2.3rem;border-radius:12px;display:grid;place-items:center;font-size:1.2rem;flex:none;background:var(--okBg)}
+.li .tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.li .tx small{font-weight:500;color:var(--soft);font-size:.8rem;margin-top:2px}
+.med .small{flex:none;white-space:nowrap}
+.li .chev{color:var(--soft);font-size:1.5rem;font-weight:400}
+.li.done .ico{background:var(--jade);color:var(--jadeInk)}
+.li.done .tx>span{color:var(--soft);text-decoration:line-through}
+.list.flat .li{padding-left:0;padding-right:0}
+.hero{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border-radius:20px;padding:16px;margin:8px 0 6px;min-height:0}
+.hero.review{background:var(--amberBg);border-color:var(--amber)}
+.hero.ok{background:var(--okBg);border-color:var(--jade)}
+.hero.abstain{background:var(--grayBg);border-color:var(--gray)}
+.hero .pill{font-size:1.05rem;font-weight:800}
+.hero .hsum{font-weight:500;font-size:.85rem;color:var(--ink)}
+.hero .more{font-size:.85rem;color:var(--jade)}
+.prog{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px 0 6px}
+.prog i{display:block;height:100%;background:var(--jade);border-radius:99px;transition:width .3s}
 .tier{border-radius:16px;padding:14px 16px;margin:6px 0 12px;border:2px solid}
 .tier.review{background:var(--amberBg);border-color:var(--amber)}
 .tier.ok{background:var(--okBg);border-color:var(--jade)}
@@ -138,7 +163,7 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
 @media print{
  body{background:#fff;color:#000}
  .screen{display:none!important}
- #sc-family{display:block!important;font-size:12px}
+ #sc-famReport{display:block!important;font-size:12px}
  .noprint,.bar,.banner,#game{display:none!important}
  .card{border:1px solid #999;break-inside:avoid}
 }
@@ -246,37 +271,42 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
  <div id="voiceList"></div>
 </section>
 
-<!-- ============ FAMILY & DOCTOR ============ -->
-<section class="screen" id="sc-family" hidden>
+<!-- ============ FAMILY HUB ============ -->
+<section class="screen fam" id="sc-family" hidden>
  <div class="bar"><button class="back" data-back></button><h1 data-t="tabFam"></h1></div>
+ <button class="hero" data-go="famReport"><span class="pill" id="hubPill"></span><span class="hsum" id="hubSum"></span><span class="more" data-t="reportOpen"></span></button>
+ <div class="card" id="setupCard"><h2 id="setupTitle"></h2><div class="prog"><i id="setupBar"></i></div><div class="list flat" id="setupList"></div></div>
+ <p class="group" data-t="grpCare"></p>
+ <div class="list">
+  <button class="li" data-go="famReport"><span class="ico">🛡️</span><span class="tx"><span data-t="rowReport"></span><small id="subReport"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famMeds"><span class="ico">💊</span><span class="tx"><span data-t="rowMeds"></span><small id="subMeds"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famVoice"><span class="ico">🎙️</span><span class="tx"><span data-t="rowVoice"></span><small id="subVoice"></small></span><span class="chev">›</span></button>
+ </div>
+ <p class="group" data-t="grpSet"></p>
+ <div class="list">
+  <button class="li" data-go="famInfo"><span class="ico">🏠</span><span class="tx"><span data-t="rowInfo"></span><small id="subInfo"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famDisplay"><span class="ico">🔠</span><span class="tx"><span data-t="rowDisplay"></span><small id="subDisplay"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famData"><span class="ico">📲</span><span class="tx"><span data-t="rowData"></span><small data-t="rowDataSub"></small></span><span class="chev">›</span></button>
+ </div>
+ <p class="group" data-t="grpDemo"></p>
+ <div class="list">
+  <button class="li" data-go="famDemo"><span class="ico">🧪</span><span class="tx"><span data-t="rowDemo"></span><small data-t="rowDemoSub"></small></span><span class="chev">›</span></button>
+ </div>
+ <p class="disc" data-t="disclaimer"></p>
+</section>
+
+<!-- ============ FAMILY: SAFETY REPORT ============ -->
+<section class="screen fam" id="sc-famReport" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgReport"></h1></div>
  <div class="card">
-  <h2 id="tReport"></h2>
   <p class="small-t" id="reportSub" style="margin:0"></p>
   <div class="pipe" id="pipe"></div>
   <div id="tierBox"></div>
   <p class="small-t" id="glance"></p>
   <button class="small noprint" id="printBtn"></button>
  </div>
- <div class="card">
-  <h2 id="tSignals"></h2>
-  <div class="legend" id="legend"></div>
-  <div id="charts"></div>
- </div>
- <div class="card" id="qsCard">
-  <h2 id="tQs"></h2>
-  <ul class="reasons" id="qs"></ul>
- </div>
- <div class="card">
-  <h2 id="tMeds"></h2>
-  <div id="medList"></div>
-  <div class="noprint">
-   <input id="medName" style="margin-top:10px">
-   <p class="sub" id="medStartL" style="margin:8px 0 4px"></p>
-   <input id="medStart" type="date">
-   <p class="status" id="medPreview"></p>
-   <button class="main" id="medAdd"></button>
-  </div>
- </div>
+ <div class="card"><h2 id="tSignals"></h2><div class="legend" id="legend"></div><div id="charts"></div></div>
+ <div class="card" id="qsCard"><h2 id="tQs"></h2><ul class="reasons" id="qs"></ul></div>
  <details class="card" id="ledgerCard">
   <summary id="tLedger"></summary>
   <p class="sub" id="ledHead" style="margin:6px 0"></p>
@@ -284,55 +314,98 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
   <p class="sub" id="traceHead" style="margin:14px 0 4px"></p>
   <ol class="trace" id="trace"></ol>
  </details>
- <div class="card noprint" id="voiceSet">
-  <h2 data-t="tVoice"></h2>
-  <p class="sub" data-t="voiceHelp"></p>
-  <p class="sub" data-t="voiceName" style="margin:0 0 4px"></p>
+ <p class="disc" id="disc"></p>
+ <span id="tReport" hidden></span>
+</section>
+
+<!-- ============ FAMILY: MEDICATIONS ============ -->
+<section class="screen fam" id="sc-famMeds" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgMeds"></h1></div>
+ <div class="card"><div id="medList"></div></div>
+ <div class="card">
+  <h2 data-t="medAddT"></h2>
+  <p class="lbl" data-t="medNameL" style="margin-top:0"></p>
+  <input id="medName">
+  <p class="status" id="medPreview"></p>
+  <p class="sub" id="medStartL" style="margin:4px 0"></p>
+  <input id="medStart" type="date">
+  <button class="main" id="medAdd" style="margin-top:12px"></button>
+ </div>
+ <span id="tMeds" hidden></span>
+</section>
+
+<!-- ============ FAMILY: VOICES & REMINDERS ============ -->
+<section class="screen fam" id="sc-famVoice" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgVoice"></h1></div>
+ <p class="status" id="voiceStatus" style="min-height:0"></p>
+ <div class="card">
+  <p class="sub" data-t="voiceHelpS"></p>
+  <details><summary class="small-t" data-t="voiceAwayQ" style="min-height:2rem;font-weight:700"></summary><p class="small-t" data-t="voiceAwayA"></p></details>
+  <p class="lbl" data-t="voiceName"></p>
   <input id="voiceName">
-  <p class="sub" data-t="medTimeL" style="margin:12px 0 4px"></p>
+ </div>
+ <div class="card">
+  <h2 data-t="medTimeL"></h2>
   <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px"><input id="medTime1" type="time" style="min-width:0"><input id="medTime2" type="time" aria-label="2" style="min-width:0"></div>
-  <p class="small-t" data-t="medTime2L" style="margin:4px 0 0"></p>
-  <h3 data-t="slotsT"></h3>
-  <div id="slotList"></div>
-  <h3 data-t="msgs"></h3>
+  <p class="small-t" data-t="medTime2L" style="margin:6px 0 0"></p>
+ </div>
+ <div class="card"><h2 data-t="slotsT"></h2><div id="slotList"></div></div>
+ <div class="card">
+  <h2 data-t="msgs"></h2>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="small" id="msgNew"></button><button class="small" id="msgFile"></button></div>
   <div id="msgList"></div>
-  <input type="file" id="voiceFile" accept="audio/*" hidden>
-  <p class="status" id="voiceStatus"></p>
  </div>
- <details class="card noprint" open>
-  <summary id="tSet"></summary>
+ <input type="file" id="voiceFile" accept="audio/*" hidden>
+</section>
+
+<!-- ============ FAMILY: GRANDMA'S DETAILS ============ -->
+<section class="screen fam" id="sc-famInfo" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgInfo"></h1></div>
+ <div class="card">
   <p class="sub" id="setHelp"></p>
-  <input id="addr" aria-label="Home address" style="margin-bottom:12px">
-  <input id="phone" type="tel" aria-label="Family phone" style="margin-bottom:12px">
-  <p class="sub" id="todoSetLabel" style="margin:0 0 6px"></p>
-  <textarea id="todoSet" rows="4" aria-label="Daily tasks" style="margin-bottom:12px"></textarea>
-  <p class="sub" data-t="maps" style="margin:0 0 6px"></p>
-  <select id="maps" aria-label="Maps" style="width:100%;margin-bottom:12px"><option value="google">Google Maps</option><option value="apple">Apple Maps</option></select>
-  <h3 data-t="tDisplay"></h3>
-  <p class="sub" data-t="sizeL" style="margin:0 0 6px"></p>
-  <div class="seg" id="sizeSeg"></div>
-  <p class="sub" data-t="autoL" style="margin:12px 0 6px"></p>
-  <div class="seg" id="autoSeg" style="grid-template-columns:1fr 1fr"></div>
-  <p class="sub" id="voiceLabel" style="margin:12px 0 6px"></p>
+  <p class="lbl" data-t="addr"></p><input id="addr" aria-label="Home address">
+  <p class="lbl" data-t="phone"></p><input id="phone" type="tel" aria-label="Family phone">
+ </div>
+ <div class="card"><p class="lbl" id="todoSetLabel" style="margin-top:0"></p><textarea id="todoSet" rows="5" aria-label="Daily tasks"></textarea></div>
+ <div class="card"><p class="lbl" data-t="maps" style="margin-top:0"></p><select id="maps" aria-label="Maps" style="width:100%"><option value="google">Google Maps</option><option value="apple">Apple Maps</option></select></div>
+</section>
+
+<!-- ============ FAMILY: TEXT & VOICE ============ -->
+<section class="screen fam" id="sc-famDisplay" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgDisplay"></h1></div>
+ <div class="card">
+  <p class="lbl" data-t="sizeL" style="margin-top:0"></p><div class="seg" id="sizeSeg"></div>
+  <p class="lbl" data-t="autoL"></p><div class="seg" id="autoSeg" style="grid-template-columns:1fr 1fr"></div>
+ </div>
+ <div class="card">
+  <p class="lbl" id="voiceLabel" style="margin-top:0"></p>
   <select id="voice" aria-label="Voice" style="width:100%"></select>
   <button class="small" id="voiceTest" style="margin-top:12px"></button>
-  <h3 data-t="tInstall"></h3>
-  <p class="sub" id="installTxt"></p>
-  <button class="small" id="installBtn" hidden></button>
-  <h3 id="tData"></h3>
+ </div>
+</section>
+
+<!-- ============ FAMILY: INSTALL & BACKUP ============ -->
+<section class="screen fam" id="sc-famData" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgData"></h1></div>
+ <div class="card"><h2 data-t="tInstall"></h2><p class="sub" id="installTxt"></p><button class="small" id="installBtn" hidden></button></div>
+ <div class="card">
+  <h2 id="tData"></h2>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="small" id="exp"></button><button class="small" id="impBtn"></button><input type="file" id="imp" accept="application/json" hidden></div>
   <p class="status" id="dataStatus"></p>
-  <p class="sub" style="margin-top:12px" id="privacy"></p>
- </details>
+  <p class="sub" id="privacy" style="margin-top:8px"></p>
+ </div>
+</section>
+
+<!-- ============ FAMILY: DEMO ============ -->
+<section class="screen fam" id="sc-famDemo" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgDemo"></h1></div>
  <div class="card noprint" id="demoCard">
-  <h2 id="tDemo"></h2>
   <p class="sub" id="demoHelp"></p>
   <div class="row" id="scenarios"></div>
   <div style="margin-top:12px"><button class="main" id="runTests"></button></div>
   <div class="scroll" id="testOut" style="margin-top:12px"></div>
+  <span id="tDemo" hidden></span>
  </div>
- <p class="disc" id="disc"></p>
 </section>
 
 <div id="game" hidden role="dialog" aria-modal="true">
@@ -744,8 +817,24 @@ tInstall:"📲 Poner en la pantalla de inicio",installIOS:"iPhone / iPad: abra e
 for(var _l in T2)Object.assign(T[_l],T2[_l]);
 if(S.size==null)S.size=1;if(S.autoSpeak==null)S.autoSpeak=true;
 
+var T4={
+zh:{reportOpen:"查看完整报告 ›",grpCare:"照顾奶奶",grpSet:"设置",grpDemo:"比赛演示",rowReport:"安全报告",rowMeds:"用药清单",rowVoice:"家人的声音和吃药提醒",rowInfo:"奶奶的信息",rowInfoSub:"地址、家人电话、每天要做的事",rowDisplay:"字体和朗读",rowData:"安装和备份",rowDataSub:"装到主屏幕、导出或导入数据",rowDemo:"演示和测试",rowDemoSub:"用合成数据给评委演示",
+medsSub:"{n} 种药 · {s} 种有镇静作用",medsNone:"还没添加",voiceSub:"已录 {n} 段 · 吃药时间 {t}",voiceNoTime:"未设置",displaySub:"字体：{s} · 自动朗读：{a}",
+setupTitle:"🚀 开始使用（已完成 {d}/{n}）",su_info:"填好家庭住址和家人电话",su_meds:"添加奶奶在吃的药",su_time:"设置每天吃药的时间",su_voice:"录一段家人的声音",su_install:"把 App 装到主屏幕",
+pgReport:"🛡️ 安全报告",pgMeds:"💊 用药清单",pgVoice:"🎙️ 声音和提醒",pgInfo:"🏠 奶奶的信息",pgDisplay:"🔠 字体和朗读",pgData:"📲 安装和备份",pgDemo:"🧪 演示和测试",medAddT:"添加一种药",medNameL:"药名（中文、英文都可以）",medName:"例如：Ambien 5mg、思诺思",voiceHelpS:"录下家人的真声音，在吃药、散步、回家的时候放给奶奶听。没录的地方用机器声音。录音只存在这台手机上。",voiceAwayQ:"不在奶奶身边怎么录？",voiceAwayA:"用自己的手机录（iPhone 用“语音备忘录”），用 AirDrop 或微信“文件”发到奶奶手机，存到“文件”里，再在下面对应的一项点“📁 用录音文件”。"},
+en:{reportOpen:"See full report ›",grpCare:"Caring for Grandma",grpSet:"Settings",grpDemo:"Competition demo",rowReport:"Safety report",rowMeds:"Medication list",rowVoice:"Family voices & medicine reminders",rowInfo:"Grandma's details",rowInfoSub:"Address, family phone, daily tasks",rowDisplay:"Text & read-aloud",rowData:"Install & backup",rowDataSub:"Home screen, export or import data",rowDemo:"Demo & tests",rowDemoSub:"Synthetic scenarios for judges",
+medsSub:"{n} medicines · {s} sedating",medsNone:"None added yet",voiceSub:"{n} recordings · medicine at {t}",voiceNoTime:"not set",displaySub:"Text: {s} · Read aloud: {a}",
+setupTitle:"🚀 Getting started ({d} of {n} done)",su_info:"Add home address and family phone",su_meds:"Add Grandma's medicines",su_time:"Set the daily medicine time",su_voice:"Record a family voice",su_install:"Put the app on the home screen",
+pgReport:"🛡️ Safety report",pgMeds:"💊 Medication list",pgVoice:"🎙️ Voices & reminders",pgInfo:"🏠 Grandma's details",pgDisplay:"🔠 Text & read-aloud",pgData:"📲 Install & backup",pgDemo:"🧪 Demo & tests",medAddT:"Add a medicine",medNameL:"Medicine name (brand, generic, or Chinese)",medName:"e.g. Ambien 5mg",voiceHelpS:"Record a family member's real voice to play at medicine time, before a walk, and on coming home. Anything not recorded uses the computer voice. Recordings stay on this phone.",voiceAwayQ:"Not with Grandma? How to record",voiceAwayA:"Record on your own phone (Voice Memos on iPhone), send it by AirDrop or as a WeChat file, save it to Files on Grandma's phone, then tap “📁 Use a recording file” on the matching item below."},
+es:{reportOpen:"Ver informe completo ›",grpCare:"Cuidar a la abuela",grpSet:"Ajustes",grpDemo:"Demostración",rowReport:"Informe de seguridad",rowMeds:"Lista de medicamentos",rowVoice:"Voces de la familia y recordatorios",rowInfo:"Datos de la abuela",rowInfoSub:"Dirección, teléfono, tareas diarias",rowDisplay:"Letra y lectura",rowData:"Instalar y copia de seguridad",rowDataSub:"Pantalla de inicio, exportar o importar",rowDemo:"Demostración y pruebas",rowDemoSub:"Escenarios sintéticos para el jurado",
+medsSub:"{n} medicamentos · {s} sedantes",medsNone:"Aún no hay",voiceSub:"{n} grabaciones · medicina a las {t}",voiceNoTime:"sin hora",displaySub:"Letra: {s} · Lectura: {a}",
+setupTitle:"🚀 Para empezar ({d} de {n} listos)",su_info:"Dirección y teléfono de la familia",su_meds:"Agregar los medicamentos",su_time:"Hora diaria de la medicina",su_voice:"Grabar una voz de la familia",su_install:"Poner la app en la pantalla de inicio",
+pgReport:"🛡️ Informe de seguridad",pgMeds:"💊 Medicamentos",pgVoice:"🎙️ Voces y recordatorios",pgInfo:"🏠 Datos de la abuela",pgDisplay:"🔠 Letra y lectura",pgData:"📲 Instalar y copia",pgDemo:"🧪 Demostración",medAddT:"Agregar un medicamento",medNameL:"Nombre (comercial, genérico o en chino)",medName:"p. ej. Ambien 5mg",voiceHelpS:"Grabe la voz real de un familiar para la hora de la medicina, antes de pasear y al volver a casa. Lo no grabado usa la voz de la computadora. Las grabaciones quedan en este teléfono.",voiceAwayQ:"¿No está con la abuela? Cómo grabar",voiceAwayA:"Grabe en su teléfono (Notas de voz en iPhone), envíelo por AirDrop o como archivo de WeChat, guárdelo en Archivos en el teléfono de la abuela y toque “📁 Usar un archivo” en el elemento correspondiente."}
+};
+for(var _f in T4)Object.assign(T[_f],T4[_f]);
+
 /* ================= Screens & navigation ================= */
-var SCREEN="home",SCREENS=["home","med","check","walk","journal","todo","ask","voices","family"];
+var SCREEN="home",SCREENS=["home","med","check","walk","journal","todo","ask","voices","family","famReport","famMeds","famVoice","famInfo","famDisplay","famData","famDemo"];
 var TITLE={med:"tMed",check:"tCheck",walk:"tWalkT",journal:"tJournal",todo:"tTodo",ask:"tAsk",voices:"tVoices",family:"tabFam"};
 function buzz(){try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
 function show(name,push){
@@ -755,7 +844,7 @@ function show(name,push){
  window.scrollTo(0,0);
  if(name==="check")CK.step=firstOpenStep();
  render();
- if(S.autoSpeak&&name!=="family"&&name!=="home"){
+ if(S.autoSpeak&&name.indexOf("fam")!==0&&name!=="home"){
   if(name==="check"){if(CK.step!==0||!(S.voiceMeta||{}).check)speakStep()}
   else if(name==="med"){if(todayMeds().length||!(S.voiceMeta||{}).med)speak(t("tMed")+" "+$("medStatus").textContent)}
   else speak(t(TITLE[name]))}
@@ -775,7 +864,8 @@ function render(){
  applyStatic();
  $("lang").value=S.lang;
  $("demoBar").hidden=!S.demo;if(S.demo){$("demoText").textContent="🧪 "+fmt(t("demoOn"),{s:S.demo});$("demoExit").textContent=t("demoExit")}
- ({home:renderHome,med:renderMed,check:renderCheck,walk:renderWalk,journal:renderJournal,todo:renderTodo,ask:renderAsk,voices:renderVoices,family:renderFamilyScreen})[SCREEN]()}
+ if(SCREEN.indexOf("fam")===0){renderFamilyScreen();return}
+ ({home:renderHome,med:renderMed,check:renderCheck,walk:renderWalk,journal:renderJournal,todo:renderTodo,ask:renderAsk,voices:renderVoices})[SCREEN]()}
 function todayMeds(){return S.meds.filter(function(m){return same(m,Date.now())})}
 function checkDone(){var c=S.checkins[today()]||{};return c.sleep!=null&&c.wake!=null&&c.fall!=null}
 function setTile(id,text,state){var e=$(id);e.textContent=text;e.parentNode.className="tile"+(state?" "+state:"")}
@@ -878,17 +968,37 @@ function renderTodo(){
 function renderAsk(){$("q").placeholder=t("askPh");$("askGo").textContent="🔍 "+t("askGo");$("askMic").textContent=t("askMic")}
 
 function renderFamilyScreen(){
- renderFamily();renderVoiceSet();
- $("tSet").textContent=t("tSet");$("setHelp").textContent=t("setHelp");
+ var res=renderFamily();renderVoiceSet();renderHub(res);
+ $("setHelp").textContent=t("setHelp");
  $("addr").placeholder=t("addr");$("phone").placeholder=t("phone");$("privacy").textContent=t("privacy");
  $("addr").value=S.addr;$("phone").value=S.phone;
  $("todoSetLabel").textContent=t("todoSet");$("todoSet").placeholder=t("todoPh");$("todoSet").value=S.todo;
  $("maps").value=S.maps;fillVoices();$("voiceTest").textContent=t("voiceTest");
  seg("sizeSeg",["size1","size2","size3"],S.size-1,function(i){S.size=i+1;save();render()});
  seg("autoSeg",["on","off"],S.autoSpeak?0:1,function(i){S.autoSpeak=i===0;save();render()});
- var standalone=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone;
+ var standalone=isStandalone();
  $("installTxt").textContent=standalone?t("installed"):(location.protocol==="file:"?t("installFile")+" ":"")+t("installIOS")+" "+t("installAnd");
  $("installBtn").hidden=!installEvt||standalone;$("installBtn").textContent=t("installBtn")}
+function isStandalone(){return !!((window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone)}
+/* Family hub: status at a glance, a first-time setup checklist, and one row per page */
+function renderHub(res){
+ var hero=document.querySelector("#sc-family .hero");hero.className="hero "+res.tier;
+ $("hubPill").textContent=t("tier_"+res.tier);$("hubSum").textContent=$("glance").textContent;
+ $("subReport").textContent=t("tier_"+res.tier);
+ var sed=res.meds.filter(function(m){return m.n&&CLS[m.n.cls].sed}).length;
+ $("subMeds").textContent=S.medList.length?fmt(t("medsSub"),{n:S.medList.length,s:sed}):t("medsNone");
+ var nClips=Object.keys(S.voiceMeta||{}).length+(S.messages||[]).length;
+ $("subVoice").textContent=fmt(t("voiceSub"),{n:nClips,t:[S.medTime,S.medTime2].filter(Boolean).join(" / ")||t("voiceNoTime")});
+ $("subInfo").textContent=S.addr&&S.phone?S.addr+" · "+S.phone:t("rowInfoSub");
+ $("subDisplay").textContent=fmt(t("displaySub"),{s:t("size"+S.size),a:S.autoSpeak?t("on"):t("off")});
+ var steps=[["su_info",S.addr&&S.phone,"famInfo"],["su_meds",S.medList.length,"famMeds"],["su_time",S.medTime,"famVoice"],["su_voice",nClips,"famVoice"],["su_install",isStandalone(),"famData"]];
+ var done=steps.filter(function(x){return x[1]}).length;
+ $("setupCard").hidden=done===steps.length||!!S.demo;
+ $("setupTitle").textContent=fmt(t("setupTitle"),{d:done,n:steps.length});$("setupBar").style.width=(done/steps.length*100)+"%";
+ var L=$("setupList");L.innerHTML="";
+ steps.forEach(function(x,i){var b=el("button","li"+(x[1]?" done":""));b.appendChild(el("span","ico",x[1]?"✓":String(i+1)));
+  var tx=el("span","tx");tx.appendChild(el("span",null,t(x[0])));b.appendChild(tx);b.appendChild(el("span","chev","›"));
+  b.onclick=function(){buzz();show(x[2])};L.appendChild(b)})}
 function seg(id,keys,cur,fn){var box=$(id);box.innerHTML="";keys.forEach(function(k,i){var b=el("button",null,t(k));b.setAttribute("aria-pressed",i===cur);b.onclick=function(){fn(i)};box.appendChild(b)})}
 
 /* ================= Family report (same agent as the desktop demo) ================= */
@@ -950,7 +1060,8 @@ function renderFamily(){
  var sc=$("scenarios");sc.innerHTML="";
  ["A","B","C","D"].forEach(function(k){var b=el("button",S.demo===k?"main":null,t("sc"+k));b.style.textAlign="left";b.onclick=function(){enterDemo(k)};sc.appendChild(b)});
  $("tData").textContent=t("tData");$("exp").textContent=t("exp");$("impBtn").textContent=t("impBtn");
- $("disc").textContent=t("disclaimer")}
+ $("disc").textContent=t("disclaimer");
+ return res}
 function runTests(){
  var out=$("testOut");out.innerHTML="";
  var tb=el("table"),hr=el("tr");[t("testHead"),t("testExp"),t("testRules"),t("testNoCritic"),t("testFull")].forEach(function(h){hr.appendChild(el("th",null,h))});tb.appendChild(hr);
@@ -964,7 +1075,7 @@ function runTests(){
  out.appendChild(el("p","small-t",fmt(t("falseAlerts"),{a:wrong.rules,b:wrong.nocritic,c:wrong.full})));
  var k=NORMTESTS.filter(function(x){var n=normalizeMed(x[0]);return n&&n.ing===x[1]}).length;
  out.appendChild(el("p","small-t",fmt(t("normTest"),{k:k,n:NORMTESTS.length})))}
-function enterDemo(k){if(!S.demo)REAL=S;var keep=S.lang;S=synth(k);S.lang=keep;["size","autoSpeak","voiceMeta","messages","voiceName","medTime","medTime2"].forEach(function(f){S[f]=REAL[f]});render();window.scrollTo(0,0)}
+function enterDemo(k){if(!S.demo)REAL=S;var keep=S.lang;S=synth(k);S.lang=keep;["size","autoSpeak","voiceMeta","messages","voiceName","medTime","medTime2"].forEach(function(f){S[f]=REAL[f]});show("famReport")}
 function exitDemo(){if(REAL){REAL.lang=S.lang;S=REAL;REAL=null}render()}
 
 /* ================= Family voices: recorded clips from family (e.g. a granddaughter) ================= */
@@ -1004,7 +1115,8 @@ function vput(k,b){return vtx("readwrite",function(st){return st.put(b,k)})}
 function vget(k){return vtx("readonly",function(st){return st.get(k)})}
 function vdel(k){return vtx("readwrite",function(st){return st.delete(k)})}
 function vname(){return S.voiceName||t("someone")}
-function vstatus(x){var e=$("voiceStatus");if(e)e.textContent=x}
+var vstTimer=null;
+function vstatus(x){var e=$("voiceStatus");if(!e)return;e.textContent=x;clearTimeout(vstTimer);vstTimer=setTimeout(function(){e.textContent=""},4000)}
 
 /* Playback: a family clip if one exists, otherwise fall back to the computer voice */
 var player=new Audio(),curURL=null;player.setAttribute("playsinline","");
@@ -1139,8 +1251,11 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-go]"),function(b){
 Array.prototype.forEach.call(document.querySelectorAll("[data-back]"),function(b){b.onclick=function(){buzz();goBack()}});
 /* Family area: press and hold, so it isn't opened by accident */
 (function(){
- var g=$("gate"),timer=null;
- function start(e){if(e.button>0)return;g.classList.add("holding");$("gateL").textContent=t("gateHold");timer=setTimeout(function(){stop();buzz();show("family")},1500)}
+ var g=$("gate"),timer=null,swallow=0;
+ function start(e){if(e.button>0)return;g.classList.add("holding");$("gateL").textContent=t("gateHold");timer=setTimeout(function(){stop();buzz();swallow=Date.now()+1000;show("family")},1500)}
+ /* the finger is still down when the family page appears; don't let its release tap whatever is now underneath */
+ document.addEventListener("click",function(e){if(Date.now()<swallow){e.preventDefault();e.stopPropagation();swallow=0}},true);
+ g.addEventListener("touchend",function(e){if(Date.now()<swallow)e.preventDefault()});
  function stop(){clearTimeout(timer);timer=null;g.classList.remove("holding");$("gateL").textContent=t("gate")}
  g.addEventListener("pointerdown",start);["pointerup","pointerleave","pointercancel"].forEach(function(ev){g.addEventListener(ev,stop)});
  g.addEventListener("contextmenu",function(e){e.preventDefault()});
@@ -1270,7 +1385,7 @@ $("askMic").onclick=function(){
 
 /* Install as an app: Android shows its own prompt; iPhone uses Share → Add to Home Screen */
 var installEvt=null;
-window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();installEvt=e;if(SCREEN==="family")render()});
+window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();installEvt=e;if(SCREEN.indexOf("fam")===0)render()});
 $("installBtn").onclick=function(){if(installEvt){installEvt.prompt();installEvt=null;render()}};
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(function(){});
 
