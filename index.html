@@ -61,6 +61,11 @@ h3{font-size:1rem;margin:.8rem 0 .3rem}
 .vhead p{flex:1;min-width:0;margin:0;background:var(--card);border-radius:18px;padding:10px 12px;position:relative}
 .vhead p::before{content:"";position:absolute;left:-8px;top:50%;margin-top:-8px;border:8px solid transparent;border-left:0;border-right-color:var(--card)}
 .pet{flex:none;width:88px;height:88px;display:block}
+.pet{position:relative;cursor:pointer;-webkit-user-select:none;user-select:none}
+.pet::after{content:"🔊";position:absolute;right:-2px;bottom:2px;font-size:.75rem;line-height:1;padding:4px;border-radius:50%;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.night .pet::after{background:#1B2638}
+.pet.talk svg{animation:talk .45s ease-in-out 2}
+@keyframes talk{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg) translateY(-4px)}75%{transform:rotate(6deg) translateY(-4px)}}
 .pet svg{width:100%;height:100%;display:block;animation:bob 2.8s ease-in-out infinite;transform-origin:50% 90%}
 .pet.cheer svg{animation:hop .5s ease-out 2,bob 2.8s ease-in-out 1s infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
@@ -212,7 +217,7 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
   <button class="big call" id="call"></button>
  </div>
  <p class="status" id="topStatus"></p>
- <div class="vcard" id="voiceCard" hidden><div class="vhead"><span class="pet" id="vcPet"></span><p id="vcText"></p></div><div class="row" id="vcBtns"></div></div>
+ <div class="vcard" id="voiceCard" hidden><div class="vhead"><span class="pet" role="button" tabindex="0" id="vcPet"></span><p id="vcText"></p></div><div class="row" id="vcBtns"></div></div>
  <div class="tiles">
   <button class="tile" data-go="med"><span class="ic">💊</span><span data-t="tileMed"></span><span class="st" id="stMed"></span></button>
   <button class="tile" data-go="check"><span class="ic">🌅</span><span data-t="tileCheck"></span><span class="st" id="stCheck"></span></button>
@@ -279,7 +284,7 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
 <!-- ============ TODO ============ -->
 <section class="screen" id="sc-todo" hidden>
  <div class="bar"><button class="back" data-back></button><h1 data-t="tTodo"></h1></div>
- <div class="vhead petbox" id="todoPetBox"><span class="pet" id="todoPet"></span><p id="todoSay"></p></div>
+ <div class="vhead petbox" id="todoPetBox"><span class="pet" role="button" tabindex="0" id="todoPet"></span><p id="todoSay"></p></div>
  <div id="todoList"></div>
  <p class="status" id="todoStatus"></p>
 </section>
@@ -302,7 +307,7 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
 <!-- ============ NIGHT (22:00–6:00) ============ -->
 <section class="screen night" id="sc-night" hidden>
  <div class="nclock" id="nClock"></div>
- <div class="vhead"><span class="pet" id="nPet"></span><p id="nSay"></p></div>
+ <div class="vhead"><span class="pet" role="button" tabindex="0" id="nPet"></span><p id="nSay"></p></div>
  <ul class="ntips" id="nTips"></ul>
  <div class="row" id="nBtns"></div>
  <div class="pair nsmall"><button class="big call" id="nCall"></button><button class="big" id="nHome"></button></div>
@@ -1161,9 +1166,9 @@ for(var _m in T3)Object.assign(T[_m],T3[_m]);
 
 /* Mimi (绵绵), a fluffy little sheep who delivers reminders: friendlier than a plain alert, and on-theme for sleep */
 var T5={
-zh:{nudgeCheck:"早上好～今天的早晨打卡还没做哦。",nudgeTodo:"今天还有 {n} 件事，绵绵陪你一起做！",goCheck:"🌅 去打卡",goTodo:"☑️ 去看看",petTodo:"还有 {n} 件，慢慢来～",petDone:"全部做完啦，真棒！🎉",petNone:"家人还没写今天要做的事。"},
-en:{nudgeCheck:"Good morning! Your morning check-in isn't done yet.",nudgeTodo:"{n} things left today. Mimi will do them with you!",goCheck:"🌅 Do check-in",goTodo:"☑️ Take a look",petTodo:"{n} left. Take your time.",petDone:"All done. Wonderful! 🎉",petNone:"Family hasn't added today's list yet."},
-es:{nudgeCheck:"¡Buenos días! Aún falta el chequeo de la mañana.",nudgeTodo:"Quedan {n} cosas hoy. ¡Mimí te acompaña!",goCheck:"🌅 Hacer chequeo",goTodo:"☑️ Ver la lista",petTodo:"Faltan {n}. Sin prisa.",petDone:"¡Todo listo, muy bien! 🎉",petNone:"La familia aún no agregó tareas."}};
+zh:{nudgeCheck:"早上好～今天的早晨打卡还没做哦。",nudgeTodo:"今天还有 {n} 件事，绵绵陪你一起做！",goCheck:"🌅 去打卡",goTodo:"☑️ 去看看",petTodo:"还有 {n} 件，慢慢来～",petDone:"全部做完啦，真棒！🎉",petNone:"家人还没写今天要做的事。",petTap:"点我，绵绵说给你听"},
+en:{nudgeCheck:"Good morning! Your morning check-in isn't done yet.",nudgeTodo:"{n} things left today. Mimi will do them with you!",goCheck:"🌅 Do check-in",goTodo:"☑️ Take a look",petTodo:"{n} left. Take your time.",petDone:"All done. Wonderful! 🎉",petNone:"Family hasn't added today's list yet.",petTap:"Tap Mimi to hear it"},
+es:{nudgeCheck:"¡Buenos días! Aún falta el chequeo de la mañana.",nudgeTodo:"Quedan {n} cosas hoy. ¡Mimí te acompaña!",goCheck:"🌅 Hacer chequeo",goTodo:"☑️ Ver la lista",petTodo:"Faltan {n}. Sin prisa.",petDone:"¡Todo listo, muy bien! 🎉",petNone:"La familia aún no agregó tareas.",petTap:"Toca a Mimí para escuchar"}};
 for(var _n in T5)Object.assign(T[_n],T5[_n]);
 var PET_INK="#5B4636";
 function petWool(c,w){return c.map(function(a){return '<circle cx="'+a[0]+'" cy="'+a[1]+'" r="'+(a[2]+w)+'"/>'}).join("")}
@@ -1188,7 +1193,15 @@ function mascot(prop,happy){
   eyes+'<ellipse cx="39.5" cy="61" rx="3.6" ry="2.3" fill="#F49A9A"/><ellipse cx="60.5" cy="61" rx="3.6" ry="2.3" fill="#F49A9A"/>'+
   '<path d="M46 62.5q4 4 8 0" fill="none" stroke="'+PET_INK+'" stroke-width="2.4" stroke-linecap="round"/>'+
   (PET_PROPS[prop]||"")+'</svg>'}
-function setPet(id,prop,happy,cheer){var p=$(id);p.innerHTML=mascot(prop,happy);p.classList.toggle("cheer",!!cheer)}
+function setPet(id,prop,happy,cheer){var p=$(id);p.innerHTML=mascot(prop,happy);p.setAttribute("aria-label",t("petTap"));p.classList.toggle("cheer",!!cheer)}
+/* Tap Mimi and she reads her speech bubble aloud; on the reminder card she plays the family recording if there is one */
+var petTalk={};
+function petSay(id){
+ var p=$(id);if(!p)return;buzz();
+ p.classList.remove("talk","cheer");void p.offsetWidth;p.classList.add("talk");setTimeout(function(){p.classList.remove("talk")},950);
+ if(petTalk[id])petTalk[id]();else speak(p.parentNode.querySelector("p").textContent)}
+["vcPet","todoPet","nPet"].forEach(function(id){var p=$(id);
+ p.onclick=function(){petSay(id)};p.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();petSay(id)}}});
 /* ================= Night mode =================
    Sedative sleep medicine + getting up in the dark is the fall risk SafeSleep is about.
    Between 22:00 and 6:00 the app opens on a dim screen that coaches a slow, safe get-up
@@ -1325,6 +1338,7 @@ function renderVoiceCard(){
  $("voiceTile").hidden=!any;$("voiceTileL").textContent=fmt(t("tileVoice"),{n:n})+(unheard.length?" ("+unheard.length+")":"");
  if(!item)return;
  $("vcText").textContent=item.text;card.classList.toggle("soft",!!item.go);setPet("vcPet",item.pet,false);
+ petTalk.vcPet=item.key?function(){playKey(item.key).then(function(ok){if(!ok)speak(item.text)})}:null;
  if(item.go){var nb=el("button","big main",item.btn);nb.onclick=function(){buzz();show(item.go)};B.appendChild(nb);return}
  var lb=el("button","big main",item.key?fmt(t("listen"),{n:n}):t("listenTTS"));
  lb.onclick=function(){buzz();if(item.key)playKey(item.key).then(function(ok){if(!ok&&item.tts)speak(item.tts)});else speak(item.tts);
