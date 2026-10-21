@@ -68,6 +68,20 @@ h3{font-size:1rem;margin:.8rem 0 .3rem}
 @media (prefers-reduced-motion:reduce){.pet svg,.pet.cheer svg{animation:none}}
 .petbox{background:var(--okBg);border-radius:22px;padding:12px;margin:4px 0 6px}
 .petbox p{font-size:1.15rem;font-weight:800;line-height:1.35}
+/* night: dim, warm, high-contrast, whatever the phone theme */
+body.nightOn{background:#0B1220}
+.screen.night{background:#0B1220;color:#F3E9D2}
+.nclock{font-size:2.8rem;font-weight:800;text-align:center;color:#C9B98F;margin:.4rem 0 .6rem}
+.night .vhead p{background:#1B2638;color:#F3E9D2;font-size:1.25rem;font-weight:800;line-height:1.4}
+.night .vhead p::before{border-right-color:#1B2638}
+.ntips{list-style:none;padding:0;margin:6px 0 16px;display:grid;gap:8px}
+.ntips li{background:#141D2C;border-radius:16px;padding:10px 14px;font-size:1.1rem;font-weight:700}
+.night button{background:#16202F;color:#F3E9D2;border-color:#C9A25B}
+.night button.main{background:#C9A25B;color:#1A1408}
+.night .call{background:#2C4B7A;border-color:#2C4B7A;color:#fff}
+.night .row .big{min-height:5.2rem;font-size:1.35rem}
+.nsmall{margin-top:16px}
+#statsTable td:not(:first-child),#statsTable th:not(:first-child){text-align:right}
 .tile.wide{grid-column:1/-1;min-height:4.4rem;flex-direction:row;gap:10px}
 .tile.wide .ic{font-size:1.8rem}
 .tile.wide[hidden]{display:none}
@@ -285,6 +299,15 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
 </section>
 
 <!-- ============ FAMILY HUB ============ -->
+<!-- ============ NIGHT (22:00–6:00) ============ -->
+<section class="screen night" id="sc-night" hidden>
+ <div class="nclock" id="nClock"></div>
+ <div class="vhead"><span class="pet" id="nPet"></span><p id="nSay"></p></div>
+ <ul class="ntips" id="nTips"></ul>
+ <div class="row" id="nBtns"></div>
+ <div class="pair nsmall"><button class="big call" id="nCall"></button><button class="big" id="nHome"></button></div>
+</section>
+
 <section class="screen fam" id="sc-family" hidden>
  <div class="bar"><button class="back" data-back></button><h1 data-t="tabFam"></h1></div>
  <button class="hero" data-go="famReport"><span class="pill" id="hubPill"></span><span class="hsum" id="hubSum"></span><span class="more" data-t="reportOpen"></span></button>
@@ -303,6 +326,7 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
  </div>
  <p class="group" data-t="grpDemo"></p>
  <div class="list">
+  <button class="li" data-go="famStats"><span class="ico">📊</span><span class="tx"><span data-t="rowStats"></span><small id="subStats"></small></span><span class="chev">›</span></button>
   <button class="li" data-go="famDemo"><span class="ico">🧪</span><span class="tx"><span data-t="rowDemo"></span><small data-t="rowDemoSub"></small></span><span class="chev">›</span></button>
  </div>
  <p class="disc" data-t="disclaimer"></p>
@@ -319,6 +343,7 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
   <button class="small noprint" id="printBtn"></button>
  </div>
  <div class="card"><h2 id="tSignals"></h2><div class="legend" id="legend"></div><div id="charts"></div></div>
+ <div class="card" id="nightCard"><h2 data-t="tNightLog"></h2><ul class="reasons" id="nightLog"></ul><p class="small-t" data-t="nlNote"></p></div>
  <div class="card" id="qsCard"><h2 id="tQs"></h2><ul class="reasons" id="qs"></ul></div>
  <details class="card" id="ledgerCard">
   <summary id="tLedger"></summary>
@@ -406,6 +431,18 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="small" id="exp"></button><button class="small" id="impBtn"></button><input type="file" id="imp" accept="application/json" hidden></div>
   <p class="status" id="dataStatus"></p>
   <p class="sub" id="privacy" style="margin-top:8px"></p>
+ </div>
+</section>
+
+<!-- ============ FAMILY: PILOT USAGE STATS ============ -->
+<section class="screen fam" id="sc-famStats" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="rowStats"></h1></div>
+ <div class="card">
+  <p class="sub" data-t="statsHelp"></p>
+  <p id="statsSum" style="font-weight:700"></p>
+  <div class="scroll"><table id="statsTable"></table></div>
+  <p class="small-t" id="statsNever"></p>
+  <button class="small" id="statsCsv" style="margin-top:10px"></button>
  </div>
 </section>
 
@@ -847,7 +884,7 @@ pgReport:"🛡️ Informe de seguridad",pgMeds:"💊 Medicamentos",pgVoice:"🎙
 for(var _f in T4)Object.assign(T[_f],T4[_f]);
 
 /* ================= Screens & navigation ================= */
-var SCREEN="home",SCREENS=["home","med","check","walk","journal","todo","ask","voices","family","famReport","famMeds","famVoice","famInfo","famDisplay","famData","famDemo"];
+var SCREEN="home",SCREENS=["home","med","check","walk","journal","todo","ask","voices","family","famReport","famMeds","famVoice","famInfo","famDisplay","famData","famDemo","night","famStats"];
 var TITLE={med:"tMed",check:"tCheck",walk:"tWalkT",journal:"tJournal",todo:"tTodo",ask:"tAsk",voices:"tVoices",family:"tabFam"};
 function buzz(){try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
 function show(name,push){
@@ -857,13 +894,15 @@ function show(name,push){
  window.scrollTo(0,0);
  if(name==="check")CK.step=firstOpenStep();
  render();
- if(S.autoSpeak&&name.indexOf("fam")!==0&&name!=="home"){
+ document.body.classList.toggle("nightOn",name==="night");useInc(name);
+ if(S.autoSpeak&&name.indexOf("fam")!==0&&name!=="home"&&name!=="night"){
   if(name==="check"){if(CK.step!==0||!(S.voiceMeta||{}).check)speakStep()}
   else if(name==="med"){if(todayMeds().length||!(S.voiceMeta||{}).med)speak(t("tMed")+" "+$("medStatus").textContent)}
   else speak(t(TITLE[name]))}
  /* family voice for this moment, if one was recorded */
  if(name==="check"&&CK.step===0&&(S.voiceMeta||{}).check)voiceOr("check",null,S.autoSpeak?speakStep:null);
- if(name==="med"&&!todayMeds().length&&(S.voiceMeta||{}).med)voiceOr("med",null)}
+ if(name==="med"&&!todayMeds().length&&(S.voiceMeta||{}).med)voiceOr("med",null);
+ if(name==="night")enterNightVoice()}
 function goBack(){if(history.state&&history.state.s&&history.state.s!=="home")history.back();else show("home",false)}
 window.addEventListener("popstate",function(e){show(e.state&&e.state.s||"home",false)});
 
@@ -878,7 +917,7 @@ function render(){
  $("lang").value=S.lang;
  $("demoBar").hidden=!S.demo;if(S.demo){$("demoText").textContent="🧪 "+fmt(t("demoOn"),{s:S.demo});$("demoExit").textContent=t("demoExit")}
  if(SCREEN.indexOf("fam")===0){renderFamilyScreen();return}
- ({home:renderHome,med:renderMed,check:renderCheck,walk:renderWalk,journal:renderJournal,todo:renderTodo,ask:renderAsk,voices:renderVoices})[SCREEN]()}
+ ({home:renderHome,med:renderMed,check:renderCheck,walk:renderWalk,journal:renderJournal,todo:renderTodo,ask:renderAsk,voices:renderVoices,night:renderNight})[SCREEN]()}
 function todayMeds(){return S.meds.filter(function(m){return same(m,Date.now())})}
 function checkDone(){var c=S.checkins[today()]||{};return c.sleep!=null&&c.wake!=null&&c.fall!=null}
 function setTile(id,text,state){var e=$(id);e.textContent=text;e.parentNode.className="tile"+(state?" "+state:"")}
@@ -984,7 +1023,7 @@ function renderTodo(){
 function renderAsk(){$("q").placeholder=t("askPh");$("askGo").textContent="🔍 "+t("askGo");$("askMic").textContent=t("askMic")}
 
 function renderFamilyScreen(){
- var res=renderFamily();renderVoiceSet();renderHub(res);
+ var res=renderFamily();renderVoiceSet();renderHub(res);renderNightLog(res);renderStats();
  $("setHelp").textContent=t("setHelp");
  $("addr").placeholder=t("addr");$("phone").placeholder=t("phone");$("privacy").textContent=t("privacy");
  $("addr").value=S.addr;$("phone").value=S.phone;
@@ -1098,22 +1137,22 @@ function exitDemo(){if(REAL){REAL.lang=S.lang;S=REAL;REAL=null}render()}
 var T3={
 zh:{tVoice:"🎙️ 家人的声音",voiceHelp:"录下家人（比如孙女）的真声音，在该吃药、散步、回家的时候放给奶奶听。没录的地方会用机器声音代替。声音只存在这台手机上，不会上传。不在奶奶身边？可以用自己手机录好（比如语音备忘录），发到奶奶手机上，再点“用录音文件”。",
 voiceName:"这是谁的声音？",voiceNamePh:"例如：孙女 Sunny",medTimeL:"每天吃药的时间",medTime2L:"第二个时间可以不填。到时间如果 App 开着，会马上提醒；之后打开 App 时，首页也会提醒。",slotsT:"什么时候放",
-slot_med:"提醒吃药",slot_medDone:"吃完药的鼓励",slot_check:"提醒做小检查",slot_walk:"出门前的叮嘱",slot_home:"散步回来，欢迎回家",slot_hello:"每天第一次打开时的问候",
-hint_med:"可以说：“奶奶，该吃药啦！吃完记得按一下‘我已经吃药了’哦。”",hint_medDone:"可以说：“奶奶真棒！今天的药吃过了，不用再吃啦。”",hint_check:"可以说：“奶奶，回答几个小问题，让我知道你睡得好不好。”",hint_walk:"可以说：“奶奶出门慢慢走，带好手机，累了就回家。”",hint_home:"可以说：“欢迎回家！跟我说说今天看到了什么？”",hint_hello:"可以说：“奶奶早上好！我是 Sunny，今天也要开开心心的！”",
+slot_med:"提醒吃药",slot_medDone:"吃完药的鼓励",slot_check:"提醒做小检查",slot_walk:"出门前的叮嘱",slot_home:"散步回来，欢迎回家",slot_hello:"每天第一次打开时的问候",slot_night:"夜里起床时的叮嘱",
+hint_med:"可以说：“奶奶，该吃药啦！吃完记得按一下‘我已经吃药了’哦。”",hint_medDone:"可以说：“奶奶真棒！今天的药吃过了，不用再吃啦。”",hint_check:"可以说：“奶奶，回答几个小问题，让我知道你睡得好不好。”",hint_walk:"可以说：“奶奶出门慢慢走，带好手机，累了就回家。”",hint_home:"可以说：“欢迎回家！跟我说说今天看到了什么？”",hint_hello:"可以说：“奶奶早上好！我是 Sunny，今天也要开开心心的！”",hint_night:"可以说：“奶奶，慢慢起来，先在床边坐一会儿，开了灯再走哦。”",
 rec:"● 录音",recStop:"■ 停止（{s} 秒）",recPlay:"▶️ 试听",recDel:"🗑️ 删除",recFile:"📁 用录音文件",recNone:"还没录",recHas:"✅ 已录 {s} 秒",recNoMic:"这个浏览器不能录音，可以用“录音文件”。",recDenied:"没有麦克风权限。请在手机设置里允许，或者用录音文件。",recSaved:"已保存。",recFail:"这台手机不能保存录音（可能是无痕模式）。",
 msgs:"💌 留言（奶奶可以随时听）",msgNew:"● 录一条新留言",msgFile:"📁 用录音文件做留言",msgNone:"还没有留言。",
 someone:"家人",tileVoice:"{n}的声音",tVoices:"💌 家人的声音",vcMed:"💊 {n}提醒你：该吃药了",vcMsg:"💌 {n}给你留言了",vcHello:"🌞 {n}跟你问好",listen:"▶️ 听{n}说",listenTTS:"▶️ 听提醒",goMed:"💊 去吃药",playAgain:"▶️ 再听一次",play:"▶️ 播放",noVoices:"家人还没有录声音。",newTag:"新",medTimeTTS:"该吃药了。吃完记得按“我已经吃药了”。",msgLabel:"留言 · {d}"},
 en:{tVoice:"🎙️ Family voices",voiceHelp:"Record a family member's real voice (e.g. a granddaughter) to play at medicine time, before a walk, and on coming home. Anything not recorded uses the computer voice. Recordings stay on this phone and are never uploaded. Not nearby? Record on your own phone (e.g. Voice Memos), send it to this phone, then tap “Use a recording file”.",
 voiceName:"Whose voice is this?",voiceNamePh:"e.g. granddaughter Sunny",medTimeL:"Daily medicine time",medTime2L:"The second time is optional. If the app is open at that time it reminds right away; otherwise the home screen reminds when the app is opened.",slotsT:"When to play",
-slot_med:"Medicine reminder",slot_medDone:"Praise after taking medicine",slot_check:"Check-in reminder",slot_walk:"Before a walk",slot_home:"Welcome home after a walk",slot_hello:"Daily greeting (first open of the day)",
-hint_med:"Try: “Grandma, it's medicine time! Tap ‘I took my medicine’ when you're done.”",hint_medDone:"Try: “Well done, Grandma! Today's medicine is taken — no more needed.”",hint_check:"Try: “Grandma, answer a few quick questions so I know how you slept.”",hint_walk:"Try: “Walk slowly, bring your phone, and come home when you're tired.”",hint_home:"Try: “Welcome home! Tell me what you saw today.”",hint_hello:"Try: “Good morning, Grandma! It's Sunny. Have a happy day!”",
+slot_med:"Medicine reminder",slot_medDone:"Praise after taking medicine",slot_check:"Check-in reminder",slot_walk:"Before a walk",slot_home:"Welcome home after a walk",slot_hello:"Daily greeting (first open of the day)",slot_night:"Getting up at night",
+hint_med:"Try: “Grandma, it's medicine time! Tap ‘I took my medicine’ when you're done.”",hint_medDone:"Try: “Well done, Grandma! Today's medicine is taken — no more needed.”",hint_check:"Try: “Grandma, answer a few quick questions so I know how you slept.”",hint_walk:"Try: “Walk slowly, bring your phone, and come home when you're tired.”",hint_home:"Try: “Welcome home! Tell me what you saw today.”",hint_hello:"Try: “Good morning, Grandma! It's Sunny. Have a happy day!”",hint_night:"Try: “Grandma, get up slowly. Sit on the bed for a minute and turn on the light first.”",
 rec:"● Record",recStop:"■ Stop ({s} s)",recPlay:"▶️ Play",recDel:"🗑️ Delete",recFile:"📁 Use a recording file",recNone:"Not recorded",recHas:"✅ Recorded {s} s",recNoMic:"This browser can't record. Use a recording file instead.",recDenied:"No microphone permission. Allow it in the phone's settings, or use a recording file.",recSaved:"Saved.",recFail:"This phone couldn't store the recording (private mode?).",
 msgs:"💌 Messages (Grandma can listen any time)",msgNew:"● Record a new message",msgFile:"📁 Message from a recording file",msgNone:"No messages yet.",
 someone:"Family",tileVoice:"{n}'s voice",tVoices:"💌 Family voices",vcMed:"💊 {n} says: time for your medicine",vcMsg:"💌 {n} left you a message",vcHello:"🌞 {n} says hello",listen:"▶️ Listen to {n}",listenTTS:"▶️ Hear reminder",goMed:"💊 Go take medicine",playAgain:"▶️ Play again",play:"▶️ Play",noVoices:"Family hasn't recorded anything yet.",newTag:"new",medTimeTTS:"It's time for your medicine. Tap “I took my medicine” when you're done.",msgLabel:"Message · {d}"},
 es:{tVoice:"🎙️ Voces de la familia",voiceHelp:"Grabe la voz real de un familiar (por ejemplo, una nieta) para reproducirla a la hora de la medicina, antes de pasear y al volver a casa. Lo que no se grabe usará la voz de la computadora. Las grabaciones quedan en este teléfono. ¿No está cerca? Grabe en su teléfono (p. ej. Notas de voz), envíelo a este teléfono y toque “Usar un archivo”.",
 voiceName:"¿De quién es la voz?",voiceNamePh:"p. ej. la nieta Sunny",medTimeL:"Hora diaria de la medicina",medTime2L:"La segunda hora es opcional. Si la app está abierta a esa hora, avisa enseguida; si no, la pantalla de inicio avisa al abrirla.",slotsT:"Cuándo reproducir",
-slot_med:"Recordatorio de medicina",slot_medDone:"Felicitación tras la medicina",slot_check:"Recordatorio de revisión",slot_walk:"Antes de pasear",slot_home:"Bienvenida al volver",slot_hello:"Saludo diario",
-hint_med:"Ej.: “Abuela, ¡hora de la medicina! Toca ‘Ya tomé mi medicina’ al terminar.”",hint_medDone:"Ej.: “¡Muy bien, abuela! Ya tomaste la medicina de hoy.”",hint_check:"Ej.: “Abuela, contesta unas preguntas para saber cómo dormiste.”",hint_walk:"Ej.: “Camina despacio, lleva el teléfono y vuelve si te cansas.”",hint_home:"Ej.: “¡Bienvenida a casa! Cuéntame qué viste hoy.”",hint_hello:"Ej.: “¡Buenos días, abuela! Soy Sunny. ¡Que tengas un día feliz!”",
+slot_med:"Recordatorio de medicina",slot_medDone:"Felicitación tras la medicina",slot_check:"Recordatorio de revisión",slot_walk:"Antes de pasear",slot_home:"Bienvenida al volver",slot_hello:"Saludo diario",slot_night:"Al levantarse de noche",
+hint_med:"Ej.: “Abuela, ¡hora de la medicina! Toca ‘Ya tomé mi medicina’ al terminar.”",hint_medDone:"Ej.: “¡Muy bien, abuela! Ya tomaste la medicina de hoy.”",hint_check:"Ej.: “Abuela, contesta unas preguntas para saber cómo dormiste.”",hint_walk:"Ej.: “Camina despacio, lleva el teléfono y vuelve si te cansas.”",hint_home:"Ej.: “¡Bienvenida a casa! Cuéntame qué viste hoy.”",hint_hello:"Ej.: “¡Buenos días, abuela! Soy Sunny. ¡Que tengas un día feliz!”",hint_night:"Ej.: “Abuela, levántate despacio. Siéntate un momento en la cama y enciende la luz.”",
 rec:"● Grabar",recStop:"■ Parar ({s} s)",recPlay:"▶️ Escuchar",recDel:"🗑️ Borrar",recFile:"📁 Usar un archivo",recNone:"Sin grabar",recHas:"✅ Grabado {s} s",recNoMic:"Este navegador no puede grabar. Use un archivo.",recDenied:"Sin permiso de micrófono. Permítalo en Ajustes o use un archivo.",recSaved:"Guardado.",recFail:"Este teléfono no pudo guardar la grabación (¿modo privado?).",
 msgs:"💌 Mensajes (la abuela puede escucharlos cuando quiera)",msgNew:"● Grabar un mensaje",msgFile:"📁 Mensaje desde un archivo",msgNone:"Aún no hay mensajes.",
 someone:"Familia",tileVoice:"Voz de {n}",tVoices:"💌 Voces de la familia",vcMed:"💊 {n} dice: hora de la medicina",vcMsg:"💌 {n} te dejó un mensaje",vcHello:"🌞 {n} te saluda",listen:"▶️ Escuchar a {n}",listenTTS:"▶️ Escuchar aviso",goMed:"💊 Ir a la medicina",playAgain:"▶️ Otra vez",play:"▶️ Escuchar",noVoices:"La familia aún no grabó nada.",newTag:"nuevo",medTimeTTS:"Es hora de su medicina. Toque “Ya tomé mi medicina” al terminar.",msgLabel:"Mensaje · {d}"}
@@ -1133,6 +1172,7 @@ var PET_PROPS={
  mail:'<g transform="translate(80 70) rotate(-8)"><rect x="-12" y="-8" width="24" height="16" rx="2.5" fill="#FFD27A" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M-12 -7l12 8 12-8" fill="none" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M0 5.5c-3-2-4.5-3.5-3-5 1-1 2.2-.6 3 .5.8-1.1 2-1.5 3-.5 1.5 1.5 0 3-3 5z" fill="#E8605A"/></g>',
  sun:'<g transform="translate(83 17)" stroke="#E8A317" stroke-width="2.6" stroke-linecap="round"><path d="M0-15v4M0 11v4M-15 0h4M11 0h4M-10.6-10.6l2.8 2.8M7.8 7.8l2.8 2.8M-10.6 10.6l2.8-2.8M7.8-7.8l2.8-2.8"/><circle r="7.5" fill="#FFC93C" stroke="none"/></g>',
  check:'<g transform="translate(81 70)"><circle r="10" fill="#3FA77F" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M-4.5 0l3 3.2 6-6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>',
+ moon:'<g><path d="M90 6a11 11 0 1 0 6 19 9 9 0 1 1-6-19z" fill="#FFD86B" stroke="#E8A317" stroke-width="1.5"/><text x="70" y="16" font-size="11" font-weight="700" fill="#C9B98F" font-family="sans-serif">z</text><text x="62" y="9" font-size="8" font-weight="700" fill="#C9B98F" font-family="sans-serif">z</text></g>',
  star:'<g fill="#FFC93C" stroke="#E8A317" stroke-width="1.5" stroke-linejoin="round"><path d="M84 10l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/><path d="M14 16l1.7 3.4 3.7.5-2.7 2.6.6 3.7-3.3-1.8-3.3 1.8.6-3.7-2.7-2.6 3.7-.5z"/></g>'};
 function mascot(prop,happy){
  var body=[[50,54,27],[27,46,12],[33,30,13],[50,24,14],[67,30,13],[73,46,12],[71,66,12],[29,66,12],[50,76,13]],tuft=[[43,39,7],[50,36,8],[57,39,7]];
@@ -1149,7 +1189,83 @@ function mascot(prop,happy){
   '<path d="M46 62.5q4 4 8 0" fill="none" stroke="'+PET_INK+'" stroke-width="2.4" stroke-linecap="round"/>'+
   (PET_PROPS[prop]||"")+'</svg>'}
 function setPet(id,prop,happy,cheer){var p=$(id);p.innerHTML=mascot(prop,happy);p.classList.toggle("cheer",!!cheer)}
-var SLOTS=["med","medDone","check","walk","home","hello"];
+/* ================= Night mode =================
+   Sedative sleep medicine + getting up in the dark is the fall risk SafeSleep is about.
+   Between 22:00 and 6:00 the app opens on a dim screen that coaches a slow, safe get-up
+   and logs each trip, which gives the agent a measured night-waking signal instead of a morning guess. */
+var T6={
+zh:{nSay:"慢慢来。先在床边坐一会儿，再站起来。",nTip1:"💡 先开灯",nTip2:"👟 穿上防滑拖鞋",nTip3:"🧱 扶着墙或家具走",nUp:"🚽 我要起来上厕所",nUpSay:"好的，慢慢走。回到床上后，按下面的大按钮。",nBack:"🛏️ 我回到床上了",nNight:"晚安，好好睡吧～",nCall:"📞 打给家人",nHome:"去首页",
+ tNightLog:"🌙 最近 7 晚夜里起床",nlRow:"{d} 夜里：{n} 次",nlNone:"最近 7 晚没有夜里起床的记录。",nlLong:"（{m} 分钟才回床）",nlMin:"（{m} 分钟）",nlNote:"按“我要起来上厕所”，或凌晨 0–5 点打开 App，都会记一次（20 分钟内只算一次）。这些记录也会交给 SafeSleep 小助手。",
+ rowStats:"试用统计",statsSub:"过去 14 天用了 {d} 天",statsHelp:"给比赛做试用数据用。只记每个功能用了几次，不记任何内容，也不会上传。",statsSum:"过去 14 天：用了 {d} 天，平均每天打开 {o} 次。",statsFeat:"功能",statsTimes:"次数",statsDays:"天数",statsNever:"这 14 天没用过：{l}",statsAll:"每个功能都用过。",statsCsv:"⬇️ 下载 CSV 表格",
+ u_open:"打开 App",u_med:"吃药",u_check:"小检查",u_walk:"散步",u_journal:"日记",u_todo:"今天要做的事",u_ask:"问问日记",u_voices:"家人的声音",u_night:"夜间页面",u_nightUp:"夜里起床（按钮）",u_medTaken:"记录吃药"},
+en:{nSay:"Take it slow. Sit on the edge of the bed for a moment, then stand up.",nTip1:"💡 Turn on the light",nTip2:"👟 Put on non-slip slippers",nTip3:"🧱 Hold the wall or furniture",nUp:"🚽 I'm getting up for the bathroom",nUpSay:"OK, walk slowly. When you're back in bed, tap the big button.",nBack:"🛏️ I'm back in bed",nNight:"Good night, sleep well.",nCall:"📞 Call family",nHome:"Home screen",
+ tNightLog:"🌙 Getting up at night (last 7 nights)",nlRow:"Night before {d}: {n}×",nlNone:"No night-time get-ups recorded in the last 7 nights.",nlLong:" ({m} min before back in bed)",nlMin:" ({m} min)",nlNote:"Tapping “I'm getting up” or opening the app between midnight and 5am counts once (at most once per 20 minutes). These records also feed the SafeSleep agent.",
+ rowStats:"Pilot usage stats",statsSub:"Used on {d} of the last 14 days",statsHelp:"For the competition pilot. Only counts how often each feature is used. No content is recorded and nothing is uploaded.",statsSum:"Last 14 days: used on {d} days, opened {o} times a day on average.",statsFeat:"Feature",statsTimes:"Times",statsDays:"Days",statsNever:"Not used in these 14 days: {l}",statsAll:"Every feature has been used.",statsCsv:"⬇️ Download CSV",
+ u_open:"Open the app",u_med:"Medicine",u_check:"Check-in",u_walk:"Walk",u_journal:"Journal",u_todo:"To-do",u_ask:"Ask my journal",u_voices:"Family voices",u_night:"Night screen",u_nightUp:"Night get-up (button)",u_medTaken:"Medicine logged"},
+es:{nSay:"Con calma. Siéntese un momento en la cama y luego levántese.",nTip1:"💡 Encienda la luz",nTip2:"👟 Póngase pantuflas antideslizantes",nTip3:"🧱 Apóyese en la pared o los muebles",nUp:"🚽 Me levanto al baño",nUpSay:"Bien, camine despacio. Al volver a la cama, toque el botón grande.",nBack:"🛏️ Ya volví a la cama",nNight:"Buenas noches, que descanse.",nCall:"📞 Llamar a mi familia",nHome:"Inicio",
+ tNightLog:"🌙 Levantadas de noche (últimas 7 noches)",nlRow:"Noche antes del {d}: {n}",nlNone:"No hay levantadas nocturnas en las últimas 7 noches.",nlLong:" ({m} min hasta volver a la cama)",nlMin:" ({m} min)",nlNote:"Tocar “Me levanto” o abrir la app entre las 0 y las 5 cuenta una vez (máximo una vez cada 20 minutos). Estos datos también los usa el agente SafeSleep.",
+ rowStats:"Uso en la prueba piloto",statsSub:"Usada {d} de los últimos 14 días",statsHelp:"Para la prueba piloto del concurso. Solo cuenta cuántas veces se usa cada función. No guarda contenido ni sube nada.",statsSum:"Últimos 14 días: usada {d} días, abierta {o} veces al día en promedio.",statsFeat:"Función",statsTimes:"Veces",statsDays:"Días",statsNever:"Sin usar en estos 14 días: {l}",statsAll:"Se usaron todas las funciones.",statsCsv:"⬇️ Descargar CSV",
+ u_open:"Abrir la app",u_med:"Medicina",u_check:"Chequeo",u_walk:"Paseo",u_journal:"Diario",u_todo:"Tareas",u_ask:"Preguntar al diario",u_voices:"Voces de la familia",u_night:"Pantalla nocturna",u_nightUp:"Levantada nocturna (botón)",u_medTaken:"Medicina registrada"}};
+for(var _o in T6)Object.assign(T[_o],T6[_o]);
+function isNight(){var h=new Date().getHours();return h>=22||h<6}
+function nightKey(ts){var d=new Date(ts||Date.now());if(d.getHours()>=12)d.setDate(d.getDate()+1);return dk(d)} /* a night belongs to the morning after, like the check-in question */
+var nightSkip=0,nightDone=0;
+function maybeNight(){if(S.demo||!isNight()||SCREEN!=="home"||Date.now()-nightSkip<30*60000)return;show("night")}
+function nightCount(){ /* same 20-minute de-duplication as the passive midnight–5am signal, so one trip counts once */
+ if(Date.now()-(S.nightLast||0)>20*60000){var k=nightKey();S.night[k]=(S.night[k]||0)+1;S.nightLast=Date.now()}}
+function renderNight(){
+ if(S.upNow&&Date.now()-S.upNow>3*3600000){S.nightUps.push({s:S.upNow,e:null});S.upNow=null;save()} /* forgot to tap "back": keep the trip, drop the duration */
+ $("nClock").textContent=fmtTime(Date.now());
+ var up=!!S.upNow,done=!up&&Date.now()-nightDone<60000;
+ setPet("nPet","moon",done||!up,false);
+ $("nSay").textContent=done?t("nNight"):up?t("nUpSay"):t("nSay");
+ var TL=$("nTips");TL.innerHTML="";if(!done)["nTip1","nTip2","nTip3"].forEach(function(k){TL.appendChild(el("li",null,t(k)))});
+ var B=$("nBtns");B.innerHTML="";
+ if(!done){var b=el("button","big main",up?t("nBack"):t("nUp"));
+  b.onclick=function(){buzz();
+   if(S.upNow){S.nightUps.push({s:S.upNow,e:Date.now()});S.nightUps=S.nightUps.slice(-200);S.upNow=null;nightDone=Date.now();if(S.autoSpeak)speak(t("nNight"))}
+   else{S.upNow=Date.now();nightCount();useInc("nightUp");if(S.autoSpeak)speak(t("nUpSay"))}
+   save();renderNight()};
+  B.appendChild(b)}
+ iconBtn("nCall","📞",t("call"));iconBtn("nHome","🏠",t("nHome"))}
+$("nCall").onclick=function(){buzz();$("call").click()};
+$("nHome").onclick=function(){buzz();nightSkip=Date.now();show("home")};
+function enterNightVoice(){if(S.autoSpeak&&!S.upNow)voiceOr("night",t("nSay"))}
+function renderNightLog(res){
+ var L=$("nightLog");L.innerHTML="";var ups=S.nightUps||[],any=false;
+ res.F.keys.slice(N-R).slice().reverse().forEach(function(k){
+  var n=(S.night||{})[k]||0;if(!n)return;any=true;
+  var mine=ups.filter(function(u){return nightKey(u.s)===k});
+  var li=el("li",null,fmt(t("nlRow"),{d:fmtShort(keyTs(k)),n:n}));
+  if(mine.length)li.appendChild(el("span","small-t"," · "+mine.map(function(u){var m=u.e?Math.round((u.e-u.s)/60000):null;
+   return fmtTime(u.s)+(m==null?"":m>20?fmt(t("nlLong"),{m:m}):fmt(t("nlMin"),{m:m}))}).join(", ")));
+  L.appendChild(li)});
+ if(!any)L.appendChild(el("li",null,t("nlNone")))}
+
+/* ================= Pilot usage stats: counts only, never content ================= */
+var USE_KEYS=["open","med","check","walk","journal","todo","ask","voices","night","nightUp","medTaken"];
+function useInc(k){
+ if(S.demo||USE_KEYS.indexOf(k)<0)return;
+ var d=today(),u=S.usage||(S.usage={});u[d]=u[d]||{};u[d][k]=(u[d][k]||0)+1;
+ var days=Object.keys(u).sort();while(days.length>120)delete u[days.shift()];save()}
+function renderStats(){
+ var u=(REAL||S).usage||{},keys=[];for(var i=13;i>=0;i--)keys.push(keyAgo(i));
+ var used=keys.filter(function(k){return u[k]}).length,opens=keys.reduce(function(a,k){return a+((u[k]||{}).open||0)},0);
+ $("subStats").textContent=fmt(t("statsSub"),{d:used});
+ $("statsSum").textContent=fmt(t("statsSum"),{d:used,o:used?(opens/used).toFixed(1):0});
+ var tb=$("statsTable");tb.innerHTML="";var hr=el("tr");[t("statsFeat"),t("statsTimes"),t("statsDays")].forEach(function(h){hr.appendChild(el("th",null,h))});tb.appendChild(hr);
+ var never=[];
+ USE_KEYS.forEach(function(f){var n=0,dd=0;keys.forEach(function(k){var c=(u[k]||{})[f]||0;n+=c;if(c)dd++});
+  if(!n&&f!=="nightUp"&&f!=="night")never.push(t("u_"+f));
+  var r=el("tr");[t("u_"+f),n,dd].forEach(function(c){r.appendChild(el("td",null,String(c)))});tb.appendChild(r)});
+ $("statsNever").textContent=never.length?fmt(t("statsNever"),{l:never.join(S.lang==="zh"?"、":", ")}):t("statsAll");
+ $("statsCsv").textContent=t("statsCsv")}
+$("statsCsv").onclick=function(){
+ var u=(REAL||S).usage||{},rows=[["date"].concat(USE_KEYS).join(",")];
+ Object.keys(u).sort().forEach(function(d){rows.push([d].concat(USE_KEYS.map(function(k){return u[d][k]||0})).join(","))});
+ var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.join("\n")+"\n"],{type:"text/csv"}));a.download="memjournal-usage-"+today()+".csv";document.body.appendChild(a);a.click();a.remove()};
+
+var SLOTS=["med","medDone","check","walk","home","hello","night"];
 
 /* Audio clips live in IndexedDB (too big for localStorage); S.voiceMeta / S.messages hold only the labels */
 var VDB=null;
@@ -1191,7 +1307,7 @@ function checkReminder(){
  voiceOr("med",t("medTimeTTS"));
  if(SCREEN==="home")renderHome()}
 function tryHello(){
- if(!(S.voiceMeta||{}).hello||S.helloDay===today()||medDue())return;
+ if(!(S.voiceMeta||{}).hello||S.helloDay===today()||medDue()||isNight())return;
  playKey("slot:hello").then(function(ok){if(ok){S.helloDay=today();save();if(SCREEN==="home")renderHome()}})}
 
 /* Home: one card for the most important thing a family voice has to say right now */
@@ -1339,7 +1455,7 @@ $("med").onclick=function(){
  buzz();var tm=todayMeds();
  if(tm.length&&!medArmed){medArmed=true;S.dup[today()]=1;save(); /* a repeat-dose attempt is itself a memory/safety signal */
   msg("medNote",t("medDone").replace("{t}",fmtTime(tm[tm.length-1]))+" "+t("medAgain"));setTimeout(function(){medArmed=false;$("medNote").textContent=""},15000);return}
- medArmed=false;S.meds.push(Date.now());S.meds=S.meds.slice(-120);save();renderMed();
+ medArmed=false;S.meds.push(Date.now());useInc("medTaken");S.meds=S.meds.slice(-120);save();renderMed();
  var note=$("medStatus").textContent+" "+t("autoBack");
  if((S.voiceMeta||{}).medDone){$("medNote").textContent=note;voiceOr("medDone",null,function(){if(SCREEN==="med")goBack()})} /* praise in the family's voice, then home */
  else{msg("medNote",note);setTimeout(function(){if(SCREEN==="med")goBack()},2500)}};
@@ -1442,13 +1558,13 @@ if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))navigator.s
 load();
 ["checkins","seen","night","dup"].forEach(function(k){if(!S[k]||typeof S[k]!=="object")S[k]={}});if(!S.medList)S.medList=[];
 if(S.size==null)S.size=1;if(S.autoSpeak==null)S.autoSpeak=true;
-if(!S.voiceMeta)S.voiceMeta={};if(!S.messages)S.messages=[];
+if(!S.voiceMeta)S.voiceMeta={};if(!S.nightUps)S.nightUps=[];if(!S.messages)S.messages=[];
 if(!S.maps)S.maps=defaultMaps();
 try{history.replaceState({s:"home"},"")}catch(e){}
-touch();render();checkReminder();tryHello();
+touch();useInc("open");render();checkReminder();tryHello();maybeNight();
 /* keep the clock, greeting and walk timer fresh; pick up a new day when the app is reopened */
-setInterval(function(){checkReminder();if(SCREEN==="home"||SCREEN==="walk")render()},30000);
-document.addEventListener("visibilitychange",function(){if(!document.hidden){touch();render();checkReminder();tryHello()}});
+setInterval(function(){checkReminder();if(SCREEN==="home"||SCREEN==="walk"||SCREEN==="night")render()},30000);
+document.addEventListener("visibilitychange",function(){if(!document.hidden){touch();useInc("open");render();checkReminder();tryHello();maybeNight()}});
 </script>
 </body>
 </html>
