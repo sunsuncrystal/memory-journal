@@ -57,7 +57,7 @@ A deterministic pipeline of five tools. It runs entirely on the phone and needs 
 | C. Very little recent data | abstain | ✗ | ✗ | ✓ |
 | D. Stable on medicine | ok | ✓ | ✓ | ✓ |
 
-Wrong decisions: rules only 3, without the critic 2, full SafeSleep 0. Medication name matching: 16/16 test names, including typos ("Ambian", "xanex") and Chinese names (思诺思, 舒乐安定). You can rerun all of this live in the family tab of the desktop demo (*Run stress tests*).
+Wrong decisions: rules only 3, without the critic 2, full SafeSleep 0. Medication name matching: 16/16 test names, including typos ("Ambian", "xanex") and Chinese names (思诺思, 舒乐安定). You can rerun all of this live in the family tab of the desktop demo (*Run all stress tests*).
 
 ## Safety and privacy
 
