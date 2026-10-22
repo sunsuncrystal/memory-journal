@@ -266,7 +266,7 @@ function renderFamily(){
  var tb=$("ledger");tb.innerHTML="";var hr=el("tr");[t("lhId"),t("lhSrc"),t("lhClaim")].forEach(function(h){hr.appendChild(el("th",null,h))});tb.appendChild(hr);
  res.ledger.forEach(function(e){var tr=el("tr");tr.appendChild(el("td",null,e.id));tr.appendChild(el("td","mono",e.src));tr.appendChild(el("td",null,e.claim));tb.appendChild(tr)});
  var tr=$("trace");tr.innerHTML="";res.trace.forEach(function(s){var li=el("li");li.appendChild(el("span","mono",s.tool+"()"));li.appendChild(document.createTextNode(" → "+s.out));tr.appendChild(li)});
- $("tDemo").textContent=t("tDemo");$("demoHelp").textContent=t("demoHelp");$("runTests").textContent=t("runTests");
+ $("tDemo").textContent=t("tDemo");$("demoHelp").textContent=t("demoHelp");$("runTests").textContent=t("runTests");$("nightPreview").textContent=t("nightPreview");
  var sc=$("scenarios");sc.innerHTML="";
  ["A","B","C","D"].forEach(function(k){var b=el("button",S.demo===k?"main":null,t("sc"+k));b.style.textAlign="left";b.onclick=function(){enterDemo(k)};sc.appendChild(b)});
  $("tData").textContent=t("tData");$("exp").textContent=t("exp");$("impBtn").textContent=t("impBtn");
@@ -316,9 +316,9 @@ for(var _m in T3)Object.assign(T[_m],T3[_m]);
 
 /* Mimi (绵绵), a fluffy little sheep who delivers reminders: friendlier than a plain alert, and on-theme for sleep */
 var T5={
-zh:{nudgeCheck:"早上好～今天的早晨打卡还没做哦。",nudgeTodo:"今天还有 {n} 件事，绵绵陪你一起做！",goCheck:"🌅 去打卡",goTodo:"☑️ 去看看",petTodo:"还有 {n} 件，慢慢来～",petDone:"全部做完啦，真棒！🎉",petNone:"家人还没写今天要做的事。",petTap:"点我，绵绵说给你听"},
-en:{nudgeCheck:"Good morning! Your morning check-in isn't done yet.",nudgeTodo:"{n} things left today. Mimi will do them with you!",goCheck:"🌅 Do check-in",goTodo:"☑️ Take a look",petTodo:"{n} left. Take your time.",petDone:"All done. Wonderful! 🎉",petNone:"Family hasn't added today's list yet.",petTap:"Tap Mimi to hear it"},
-es:{nudgeCheck:"¡Buenos días! Aún falta el chequeo de la mañana.",nudgeTodo:"Quedan {n} cosas hoy. ¡Mimí te acompaña!",goCheck:"🌅 Hacer chequeo",goTodo:"☑️ Ver la lista",petTodo:"Faltan {n}. Sin prisa.",petDone:"¡Todo listo, muy bien! 🎉",petNone:"La familia aún no agregó tareas.",petTap:"Toca a Mimí para escuchar"}};
+zh:{nudgeCheck:"早上好～今天的早晨打卡还没做哦。",nudgeTodo:"今天还有 {n} 件事，绵绵陪你一起做！",goCheck:"🌅 去打卡",goTodo:"☑️ 去看看",petTodo:"还有 {n} 件，慢慢来～",petDone:"全部做完啦，真棒！🎉",petNone:"家人还没写今天要做的事。",petTap:"点我，绵绵说给你听",petHi:["你好呀！今天也要开开心心的！","绵绵在这里陪着你～","记得喝点水哦！","你今天真好看！","有事就按“打给家人”哦。"]},
+en:{nudgeCheck:"Good morning! Your morning check-in isn't done yet.",nudgeTodo:"{n} things left today. Mimi will do them with you!",goCheck:"🌅 Do check-in",goTodo:"☑️ Take a look",petTodo:"{n} left. Take your time.",petDone:"All done. Wonderful! 🎉",petNone:"Family hasn't added today's list yet.",petTap:"Tap Mimi to hear it",petHi:["Hello! Have a happy day!","Mimi is right here with you.","Remember to drink some water!","You look lovely today!","Need help? Tap “Call family”."]},
+es:{nudgeCheck:"¡Buenos días! Aún falta el chequeo de la mañana.",nudgeTodo:"Quedan {n} cosas hoy. ¡Mimí te acompaña!",goCheck:"🌅 Hacer chequeo",goTodo:"☑️ Ver la lista",petTodo:"Faltan {n}. Sin prisa.",petDone:"¡Todo listo, muy bien! 🎉",petNone:"La familia aún no agregó tareas.",petTap:"Toca a Mimí para escuchar",petHi:["¡Hola! ¡Que tengas un día feliz!","Mimí está aquí contigo.","¡Recuerda tomar agua!","¡Qué bien te ves hoy!","¿Necesitas ayuda? Toca “Llamar a mi familia”."]}};
 for(var _n in T5)Object.assign(T[_n],T5[_n]);
 var PET_INK="#5B4636";
 function petWool(c,w){return c.map(function(a){return '<circle cx="'+a[0]+'" cy="'+a[1]+'" r="'+(a[2]+w)+'"/>'}).join("")}
@@ -328,6 +328,7 @@ var PET_PROPS={
  sun:'<g transform="translate(83 17)" stroke="#E8A317" stroke-width="2.6" stroke-linecap="round"><path d="M0-15v4M0 11v4M-15 0h4M11 0h4M-10.6-10.6l2.8 2.8M7.8 7.8l2.8 2.8M-10.6 10.6l2.8-2.8M7.8-7.8l2.8-2.8"/><circle r="7.5" fill="#FFC93C" stroke="none"/></g>',
  check:'<g transform="translate(81 70)"><circle r="10" fill="#3FA77F" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M-4.5 0l3 3.2 6-6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>',
  moon:'<g><path d="M90 6a11 11 0 1 0 6 19 9 9 0 1 1-6-19z" fill="#FFD86B" stroke="#E8A317" stroke-width="1.5"/><text x="70" y="16" font-size="11" font-weight="700" fill="#C9B98F" font-family="sans-serif">z</text><text x="62" y="9" font-size="8" font-weight="700" fill="#C9B98F" font-family="sans-serif">z</text></g>',
+ note:'<g fill="#7A6CF0"><path d="M80 8v14.5a4.5 3.6 0 1 1-2.2-3.1V11.5l10-2.5v11a4.5 3.6 0 1 1-2.2-3.1V6z"/><path d="M12 22v9.5a3.6 2.9 0 1 1-1.8-2.5V22z" fill="#E8605A"/></g>',
  star:'<g fill="#FFC93C" stroke="#E8A317" stroke-width="1.5" stroke-linejoin="round"><path d="M84 10l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/><path d="M14 16l1.7 3.4 3.7.5-2.7 2.6.6 3.7-3.3-1.8-3.3 1.8.6-3.7-2.7-2.6 3.7-.5z"/></g>'};
 function mascot(prop,happy){
  var body=[[50,54,27],[27,46,12],[33,30,13],[50,24,14],[67,30,13],[73,46,12],[71,66,12],[29,66,12],[50,76,13]],tuft=[[43,39,7],[50,36,8],[57,39,7]];
@@ -350,50 +351,60 @@ function petSay(id){
  var p=$(id);if(!p)return;buzz();
  p.classList.remove("talk","cheer");void p.offsetWidth;p.classList.add("talk");setTimeout(function(){p.classList.remove("talk")},950);
  if(petTalk[id])petTalk[id]();else speak(p.parentNode.querySelector("p").textContent)}
-["vcPet","todoPet","nPet"].forEach(function(id){var p=$(id);
+/* Home Mimi: tap for a little cheerful line in a bubble */
+var bubTimer=null;
+petTalk.homePet=function(){var L=t("petHi"),x=L[Math.floor(Math.random()*L.length)],b=$("homeBub");
+ b.textContent=x;b.hidden=false;clearTimeout(bubTimer);bubTimer=setTimeout(function(){b.hidden=true},4000);speak(x)};
+["vcPet","todoPet","nPet","homePet"].forEach(function(id){var p=$(id);
  p.onclick=function(){petSay(id)};p.onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();petSay(id)}}});
 /* ================= Night mode =================
    Sedative sleep medicine + getting up in the dark is the fall risk SafeSleep is about.
    Between 22:00 and 6:00 the app opens on a dim screen that coaches a slow, safe get-up
    and logs each trip, which gives the agent a measured night-waking signal instead of a morning guess. */
 var T6={
-zh:{nSay:"慢慢来。先在床边坐一会儿，再站起来。",nTip1:"💡 先开灯",nTip2:"👟 穿上防滑拖鞋",nTip3:"🧱 扶着墙或家具走",nUp:"🚽 我要起来上厕所",nUpSay:"好的，慢慢走。回到床上后，按下面的大按钮。",nBack:"🛏️ 我回到床上了",nNight:"晚安，好好睡吧～",nCall:"📞 打给家人",nHome:"去首页",
+zh:{nSay:"慢慢来。先在床边坐一会儿，再站起来。",nTip1:"💡 先开灯",nTip2:"👟 穿上防滑拖鞋",nTip3:"🧱 扶着墙或家具走",nUp:"🚽 我要起来上厕所",nUpSay:"好的，慢慢走。回到床上后，按下面的大按钮。",nBack:"🛏️ 我回到床上了",nNight:"晚安，好好睡吧～",nCall:"📞 打给家人",nHome:"去首页",nightPreview:"🌙 看看夜间模式（晚上 10 点到早上 6 点自动出现）",nPrevBack:"返回",
  tNightLog:"🌙 最近 7 晚夜里起床",nlRow:"{d} 夜里：{n} 次",nlNone:"最近 7 晚没有夜里起床的记录。",nlLong:"（{m} 分钟才回床）",nlMin:"（{m} 分钟）",nlNote:"按“我要起来上厕所”，或凌晨 0–5 点打开 App，都会记一次（20 分钟内只算一次）。这些记录也会交给 SafeSleep 小助手。",
  rowStats:"试用统计",statsSub:"过去 14 天用了 {d} 天",statsHelp:"给比赛做试用数据用。只记每个功能用了几次，不记任何内容，也不会上传。",statsSum:"过去 14 天：用了 {d} 天，平均每天打开 {o} 次。",statsFeat:"功能",statsTimes:"次数",statsDays:"天数",statsNever:"这 14 天没用过：{l}",statsAll:"每个功能都用过。",statsCsv:"⬇️ 下载 CSV 表格",
  u_open:"打开 App",u_med:"吃药",u_check:"小检查",u_walk:"散步",u_journal:"日记",u_todo:"今天要做的事",u_ask:"问问日记",u_voices:"家人的声音",u_night:"夜间页面",u_nightUp:"夜里起床（按钮）",u_medTaken:"记录吃药"},
-en:{nSay:"Take it slow. Sit on the edge of the bed for a moment, then stand up.",nTip1:"💡 Turn on the light",nTip2:"👟 Put on non-slip slippers",nTip3:"🧱 Hold the wall or furniture",nUp:"🚽 I'm getting up for the bathroom",nUpSay:"OK, walk slowly. When you're back in bed, tap the big button.",nBack:"🛏️ I'm back in bed",nNight:"Good night, sleep well.",nCall:"📞 Call family",nHome:"Home screen",
+en:{nSay:"Take it slow. Sit on the edge of the bed for a moment, then stand up.",nTip1:"💡 Turn on the light",nTip2:"👟 Put on non-slip slippers",nTip3:"🧱 Hold the wall or furniture",nUp:"🚽 I'm getting up for the bathroom",nUpSay:"OK, walk slowly. When you're back in bed, tap the big button.",nBack:"🛏️ I'm back in bed",nNight:"Good night, sleep well.",nCall:"📞 Call family",nHome:"Home screen",nightPreview:"🌙 Preview night mode (opens by itself 10 pm–6 am)",nPrevBack:"Back",
  tNightLog:"🌙 Getting up at night (last 7 nights)",nlRow:"Night before {d}: {n}×",nlNone:"No night-time get-ups recorded in the last 7 nights.",nlLong:" ({m} min before back in bed)",nlMin:" ({m} min)",nlNote:"Tapping “I'm getting up” or opening the app between midnight and 5am counts once (at most once per 20 minutes). These records also feed the SafeSleep agent.",
  rowStats:"Pilot usage stats",statsSub:"Used on {d} of the last 14 days",statsHelp:"For the competition pilot. Only counts how often each feature is used. No content is recorded and nothing is uploaded.",statsSum:"Last 14 days: used on {d} days, opened {o} times a day on average.",statsFeat:"Feature",statsTimes:"Times",statsDays:"Days",statsNever:"Not used in these 14 days: {l}",statsAll:"Every feature has been used.",statsCsv:"⬇️ Download CSV",
  u_open:"Open the app",u_med:"Medicine",u_check:"Check-in",u_walk:"Walk",u_journal:"Journal",u_todo:"To-do",u_ask:"Ask my journal",u_voices:"Family voices",u_night:"Night screen",u_nightUp:"Night get-up (button)",u_medTaken:"Medicine logged"},
-es:{nSay:"Con calma. Siéntese un momento en la cama y luego levántese.",nTip1:"💡 Encienda la luz",nTip2:"👟 Póngase pantuflas antideslizantes",nTip3:"🧱 Apóyese en la pared o los muebles",nUp:"🚽 Me levanto al baño",nUpSay:"Bien, camine despacio. Al volver a la cama, toque el botón grande.",nBack:"🛏️ Ya volví a la cama",nNight:"Buenas noches, que descanse.",nCall:"📞 Llamar a mi familia",nHome:"Inicio",
+es:{nSay:"Con calma. Siéntese un momento en la cama y luego levántese.",nTip1:"💡 Encienda la luz",nTip2:"👟 Póngase pantuflas antideslizantes",nTip3:"🧱 Apóyese en la pared o los muebles",nUp:"🚽 Me levanto al baño",nUpSay:"Bien, camine despacio. Al volver a la cama, toque el botón grande.",nBack:"🛏️ Ya volví a la cama",nNight:"Buenas noches, que descanse.",nCall:"📞 Llamar a mi familia",nHome:"Inicio",nightPreview:"🌙 Ver el modo noche (aparece solo de 22 a 6 h)",nPrevBack:"Volver",
  tNightLog:"🌙 Levantadas de noche (últimas 7 noches)",nlRow:"Noche antes del {d}: {n}",nlNone:"No hay levantadas nocturnas en las últimas 7 noches.",nlLong:" ({m} min hasta volver a la cama)",nlMin:" ({m} min)",nlNote:"Tocar “Me levanto” o abrir la app entre las 0 y las 5 cuenta una vez (máximo una vez cada 20 minutos). Estos datos también los usa el agente SafeSleep.",
  rowStats:"Uso en la prueba piloto",statsSub:"Usada {d} de los últimos 14 días",statsHelp:"Para la prueba piloto del concurso. Solo cuenta cuántas veces se usa cada función. No guarda contenido ni sube nada.",statsSum:"Últimos 14 días: usada {d} días, abierta {o} veces al día en promedio.",statsFeat:"Función",statsTimes:"Veces",statsDays:"Días",statsNever:"Sin usar en estos 14 días: {l}",statsAll:"Se usaron todas las funciones.",statsCsv:"⬇️ Descargar CSV",
  u_open:"Abrir la app",u_med:"Medicina",u_check:"Chequeo",u_walk:"Paseo",u_journal:"Diario",u_todo:"Tareas",u_ask:"Preguntar al diario",u_voices:"Voces de la familia",u_night:"Pantalla nocturna",u_nightUp:"Levantada nocturna (botón)",u_medTaken:"Medicina registrada"}};
 for(var _o in T6)Object.assign(T[_o],T6[_o]);
 function isNight(){var h=new Date().getHours();return h>=22||h<6}
 function nightKey(ts){var d=new Date(ts||Date.now());if(d.getHours()>=12)d.setDate(d.getDate()+1);return dk(d)} /* a night belongs to the morning after, like the check-in question */
-var nightSkip=0,nightDone=0;
-function maybeNight(){if(S.demo||!isNight()||SCREEN!=="home"||Date.now()-nightSkip<30*60000)return;show("night")}
+var nightSkip=0,nightDone=0,NP=null; /* NP: preview state for showing night mode in the daytime; never recorded */
+/* At night the app opens on the night screen from wherever it was left, except while family is using it,
+   during a walk, or in the tap game */
+function maybeNight(){
+ if(S.demo||!isNight()||Date.now()-nightSkip<30*60000||SCREEN==="night"||SCREEN.indexOf("fam")===0||(SCREEN==="walk"&&S.walk)||!$("game").hidden)return;
+ NP=null;show("night")}
 function nightCount(){ /* same 20-minute de-duplication as the passive midnight–5am signal, so one trip counts once */
  if(Date.now()-(S.nightLast||0)>20*60000){var k=nightKey();S.night[k]=(S.night[k]||0)+1;S.nightLast=Date.now()}}
 function renderNight(){
- if(S.upNow&&Date.now()-S.upNow>3*3600000){S.nightUps.push({s:S.upNow,e:null});S.upNow=null;save()} /* forgot to tap "back": keep the trip, drop the duration */
+ if(!NP&&S.upNow&&Date.now()-S.upNow>3*3600000){S.nightUps.push({s:S.upNow,e:null});S.upNow=null;save()} /* forgot to tap "back": keep the trip, drop the duration */
  $("nClock").textContent=fmtTime(Date.now());
- var up=!!S.upNow,done=!up&&Date.now()-nightDone<60000;
+ var up=NP?!!NP.up:!!S.upNow,done=!up&&Date.now()-(NP?NP.done:nightDone)<60000;
  setPet("nPet","moon",done||!up,false);
  $("nSay").textContent=done?t("nNight"):up?t("nUpSay"):t("nSay");
  var TL=$("nTips");TL.innerHTML="";if(!done)["nTip1","nTip2","nTip3"].forEach(function(k){TL.appendChild(el("li",null,t(k)))});
  var B=$("nBtns");B.innerHTML="";
  if(!done){var b=el("button","big main",up?t("nBack"):t("nUp"));
   b.onclick=function(){buzz();
+   if(NP){if(NP.up){NP.up=0;NP.done=Date.now();if(S.autoSpeak)speak(t("nNight"))}else{NP.up=1;if(S.autoSpeak)speak(t("nUpSay"))}renderNight();return}
    if(S.upNow){S.nightUps.push({s:S.upNow,e:Date.now()});S.nightUps=S.nightUps.slice(-200);S.upNow=null;nightDone=Date.now();if(S.autoSpeak)speak(t("nNight"))}
    else{S.upNow=Date.now();nightCount();useInc("nightUp");if(S.autoSpeak)speak(t("nUpSay"))}
    save();renderNight()};
   B.appendChild(b)}
- iconBtn("nCall","📞",t("call"));iconBtn("nHome","🏠",t("nHome"))}
+ iconBtn("nCall","📞",t("call"));iconBtn("nHome",NP?"←":"🏠",NP?t("nPrevBack"):t("nHome"))}
 $("nCall").onclick=function(){buzz();$("call").click()};
-$("nHome").onclick=function(){buzz();nightSkip=Date.now();show("home")};
-function enterNightVoice(){if(S.autoSpeak&&!S.upNow)voiceOr("night",t("nSay"))}
+$("nHome").onclick=function(){buzz();if(NP){NP=null;goBack();return}nightSkip=Date.now();show("home")};
+$("nightPreview").onclick=function(){buzz();NP={up:0,done:0};show("night")};
+function enterNightVoice(){if(S.autoSpeak&&!(NP?NP.up:S.upNow))voiceOr("night",t("nSay"))}
 function renderNightLog(res){
  var L=$("nightLog");L.innerHTML="";var ups=S.nightUps||[],any=false;
  res.F.keys.slice(N-R).slice().reverse().forEach(function(k){
@@ -526,7 +537,8 @@ function renderVoiceCard(){
  if(!item&&!S.demo){var ti=todoItems(),tl=ti.filter(function(x){return todoToday().indexOf(x)<0}).length;
   if(!checkDone()&&new Date().getHours()<12)item={text:t("nudgeCheck"),go:"check",btn:t("goCheck"),pet:"sun"};
   else if(tl)item={text:fmt(t("nudgeTodo"),{n:tl}),go:"todo",btn:t("goTodo"),pet:"check"}}
- card.hidden=!item;B.innerHTML="";
+ card.hidden=!item;B.innerHTML="";$("homePetBox").hidden=!!item; /* Mimi dances up top until she has a reminder to deliver */
+ if(!item&&!$("homePet").firstChild)setPet("homePet","note",true);
  var any=msgs.length||Object.keys(meta).length;
  $("voiceTile").hidden=!any;$("voiceTileL").textContent=fmt(t("tileVoice"),{n:n})+(unheard.length?" ("+unheard.length+")":"");
  if(!item)return;

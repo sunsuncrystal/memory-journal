@@ -161,7 +161,27 @@ function ok(c, msg) { if (!c) throw new Error(msg || 'assertion failed'); }
     eq(await n.evaluate(() => { let called = false; const o = playKey; playKey = () => { called = true; return Promise.resolve(true); };
       S.voiceMeta.hello = { dur: 2 }; S.helloDay = ''; tryHello(); playKey = o; delete S.voiceMeta.hello; return called; }), false);
   });
+  await test('reopening at night from another screen goes to night mode, but not while family is using it', async () => {
+    const vis = () => n.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+    await n.evaluate(() => { nightSkip = 0; show('journal'); }); await vis(); await wait(200);
+    eq(await n.evaluate(() => SCREEN), 'night');
+    await n.evaluate(() => show('famMeds')); await vis(); await wait(200);
+    eq(await n.evaluate(() => SCREEN), 'famMeds');
+  });
   await test('night mode has no script errors', async () => eq(n.errors, []));
+
+  console.log('\nNight mode preview (daytime)');
+  const v = await phone(DAY);
+  await test('family can preview night mode in the daytime, and the preview records nothing', async () => {
+    await v.evaluate(() => show('famDemo')); await wait(200);
+    await v.click('#nightPreview'); await wait(200);
+    eq(await v.evaluate(() => SCREEN), 'night');
+    await v.click('#nBtns button'); await wait(150); await v.click('#nBtns button'); await wait(150);
+    eq(await v.evaluate(() => [S.nightUps.length, Object.keys(S.night).length, !!S.upNow]), [0, 0, false]);
+    await v.click('#nHome'); await wait(300);
+    eq(await v.evaluate(() => SCREEN), 'famDemo');
+    eq(v.errors, []);
+  });
 
   await browser.close(); srv.close();
   console.log('\n' + passed + ' passed, ' + failed + ' failed\n');
