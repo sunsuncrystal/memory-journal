@@ -50,6 +50,7 @@ h3{font-size:1rem;margin:.8rem 0 .3rem}
 .tiles{display:grid;margin-top:4px;grid-template-columns:1fr 1fr;gap:12px}
 .tile{min-height:8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:24px;padding:.6rem .4rem;font-size:1.15rem;line-height:1.25}
 .tile .ic{font-size:2.4rem;line-height:1.1}
+.tile .icsvg{width:2.9rem;height:2.9rem;display:block}
 .tile .st{font-size:.8rem;font-weight:600;color:var(--soft);margin-top:2px}
 .tile.done{background:var(--okBg)}
 .tile.todo .st{color:var(--warn)}
@@ -237,12 +238,12 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
  <p class="status" id="topStatus"></p>
  <div class="vcard" id="voiceCard" hidden><div class="vhead"><span class="pet" role="button" tabindex="0" id="vcPet"></span><p id="vcText"></p></div><div class="row" id="vcBtns"></div></div>
  <div class="tiles">
-  <button class="tile" data-go="med"><span class="ic">💊</span><span data-t="tileMed"></span><span class="st" id="stMed"></span></button>
-  <button class="tile" data-go="check"><span class="ic">🌅</span><span data-t="tileCheck"></span><span class="st" id="stCheck"></span></button>
-  <button class="tile" data-go="walk"><span class="ic">🚶</span><span data-t="tileWalk"></span><span class="st" id="stWalk"></span></button>
-  <button class="tile" data-go="journal"><span class="ic">📖</span><span data-t="tileJournal"></span><span class="st" id="stJournal"></span></button>
-  <button class="tile" data-go="todo"><span class="ic">☑️</span><span data-t="tileTodo"></span><span class="st" id="stTodo"></span></button>
-  <button class="tile" data-go="ask"><span class="ic">❓</span><span data-t="tileAsk"></span><span class="st" data-t="stAsk"></span></button>
+  <button class="tile" data-go="med"><span class="ic"><svg class="icsvg" viewBox="0 0 64 64" aria-hidden="true"><path d="M38 22h18l-2.5 34a3 3 0 0 1-3 2.8h-7a3 3 0 0 1-3-2.8z" fill="#E6F4FB" stroke="#9CC9DE" stroke-width="2"/><path d="M39.3 36h15.4l-1.4 19.5a2 2 0 0 1-2 1.8h-8.6a2 2 0 0 1-2-1.8z" fill="#7CC4E8"/><ellipse cx="47" cy="36" rx="7.7" ry="1.6" fill="#A8DBF2"/><g transform="rotate(-38 22 42)"><rect x="2" y="32" width="40" height="20" rx="10" fill="#FFFFFF" stroke="#C9D2D8" stroke-width="2"/><path d="M22 32h-10a10 10 0 0 0 0 20h10z" fill="#EF6B5E"/><path d="M11 36.5h6" stroke="#FFB1A8" stroke-width="2.6" stroke-linecap="round"/></g></svg></span><span data-t="tileMed"></span><span class="st" id="stMed"></span></button>
+  <button class="tile" data-go="check"><span class="ic"><svg class="icsvg" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="36" r="27" fill="#FFF3D6"/><rect x="30.5" y="6" width="3" height="8" rx="1.5" fill="#FFB020" transform="rotate(-70 32 36)"/><rect x="30.5" y="6" width="3" height="8" rx="1.5" fill="#FFB020" transform="rotate(-35 32 36)"/><rect x="30.5" y="6" width="3" height="8" rx="1.5" fill="#FFB020" transform="rotate(0 32 36)"/><rect x="30.5" y="6" width="3" height="8" rx="1.5" fill="#FFB020" transform="rotate(35 32 36)"/><rect x="30.5" y="6" width="3" height="8" rx="1.5" fill="#FFB020" transform="rotate(70 32 36)"/><circle cx="32" cy="36" r="14" fill="#FFC93C"/><clipPath id="ckClip"><circle cx="32" cy="36" r="27"/></clipPath><g clip-path="url(#ckClip)"><path d="M2 42 Q16 36 32 40 T62 40 V66 H2Z" fill="#9BD889"/><path d="M2 48 Q20 42 34 47 T62 46 V66 H2Z" fill="#7BC46F"/></g><circle cx="27" cy="32" r="1.5" fill="#5B4636"/><circle cx="37" cy="32" r="1.5" fill="#5B4636"/><ellipse cx="24.5" cy="35.5" rx="2" ry="1.2" fill="#F49A9A"/><ellipse cx="39.5" cy="35.5" rx="2" ry="1.2" fill="#F49A9A"/><circle cx="50" cy="50" r="9" fill="#3FA77F" stroke="#fff" stroke-width="2.5"/><path d="M45.8 50l2.8 3 5.4-5.8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span data-t="tileCheck"></span><span class="st" id="stCheck"></span></button>
+  <button class="tile" data-go="walk"><span class="ic"><svg class="icsvg" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="32" cy="55" rx="30" ry="8" fill="#9BD889"/><path d="M6 58 C20 50 34 56 60 49" fill="none" stroke="#E9CFA3" stroke-width="6" stroke-linecap="round"/><rect x="12" y="34" width="4" height="16" rx="2" fill="#9A6B45"/><circle cx="14" cy="28" r="9" fill="#5DBB63"/><circle cx="10" cy="32" r="6" fill="#4FA957"/><circle cx="18" cy="23" r="5" fill="#74CC78"/><circle cx="54" cy="12" r="6" fill="#FFC93C"/><rect x="34" y="42" width="4" height="9" rx="2" fill="#5B4636" transform="rotate(14 36 42)"/><rect x="44" y="42" width="4" height="9" rx="2" fill="#5B4636" transform="rotate(-16 46 42)"/><circle cx="40" cy="36" r="11" fill="#5B4636"/><circle cx="32" cy="33" r="8" fill="#5B4636"/><circle cx="36" cy="27" r="8" fill="#5B4636"/><circle cx="44" cy="27" r="8" fill="#5B4636"/><circle cx="49" cy="32" r="8" fill="#5B4636"/><circle cx="47" cy="41" r="8" fill="#5B4636"/><circle cx="34" cy="41" r="8" fill="#5B4636"/><circle cx="40" cy="36" r="9" fill="#FFFDF8"/><circle cx="32" cy="33" r="6" fill="#FFFDF8"/><circle cx="36" cy="27" r="6" fill="#FFFDF8"/><circle cx="44" cy="27" r="6" fill="#FFFDF8"/><circle cx="49" cy="32" r="6" fill="#FFFDF8"/><circle cx="47" cy="41" r="6" fill="#FFFDF8"/><circle cx="34" cy="41" r="6" fill="#FFFDF8"/><ellipse cx="49" cy="34" rx="7" ry="6.2" fill="#FBE6D4" stroke="#5B4636" stroke-width="1.8"/><ellipse cx="44" cy="31" rx="4" ry="2" transform="rotate(-30 44 31)" fill="#F3C7A8" stroke="#5B4636" stroke-width="1.4"/><circle cx="51" cy="33" r="1.3" fill="#5B4636"/><ellipse cx="52.5" cy="36.5" rx="1.6" ry="1" fill="#F49A9A"/><path d="M49 37.5q2 1.6 4 0" fill="none" stroke="#5B4636" stroke-width="1.3" stroke-linecap="round"/></svg></span><span data-t="tileWalk"></span><span class="st" id="stWalk"></span></button>
+  <button class="tile" data-go="journal"><span class="ic"><svg class="icsvg" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 16q13-5 26 1v38q-13-6-26-1z" fill="#FFFFFF" stroke="#E2B4C2" stroke-width="2"/><path d="M58 16q-13-5-26 1v38q13-6 26-1z" fill="#FFFFFF" stroke="#E2B4C2" stroke-width="2"/><path d="M4 54q14-6 28 2 14-8 28-2v4q-14-5-28 2-14-7-28-2z" fill="#F08FAE"/><g stroke="#CFE0EA" stroke-width="2" stroke-linecap="round"><path d="M11 24q8-2 16 1M11 31q8-2 16 1M11 38q8-2 16 1M37 25q8-3 16-1M37 32q6-2 10-1"/></g><path d="M28 14q2 0 3 3" fill="none" stroke="#F08FAE" stroke-width="2"/><g transform="rotate(40 48 38)"><rect x="44" y="18" width="8" height="30" rx="1.5" fill="#FFC93C"/><rect x="44" y="18" width="8" height="5" rx="1.5" fill="#F49A9A"/><rect x="44" y="22" width="8" height="2.5" fill="#B8C2C8"/><path d="M44 48l4 8 4-8z" fill="#F3D9B1"/><path d="M47 54l1 2 1-2z" fill="#5B4636"/></g></svg></span><span data-t="tileJournal"></span><span class="st" id="stJournal"></span></button>
+  <button class="tile" data-go="todo"><span class="ic"><svg class="icsvg" viewBox="0 0 64 64" aria-hidden="true"><rect x="10" y="8" width="44" height="52" rx="6" fill="#C98B55"/><rect x="10" y="8" width="44" height="52" rx="6" fill="none" stroke="#A86F3E" stroke-width="2"/><rect x="15" y="14" width="34" height="41" rx="3" fill="#FFFFFF"/><rect x="22" y="4" width="20" height="10" rx="3" fill="#9AA6B2"/><rect x="27" y="2" width="10" height="5" rx="2.5" fill="#7D8995"/><circle cx="22" cy="24" r="4.2" fill="#3FA77F"/><path d="M20 24l1.6 1.7 3-3.3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="29" y="22.5" width="15" height="3" rx="1.5" fill="#C9D3D0"/><circle cx="22" cy="35" r="4.2" fill="#3FA77F"/><path d="M20 35l1.6 1.7 3-3.3" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="29" y="33.5" width="12" height="3" rx="1.5" fill="#C9D3D0"/><rect x="18" y="42.5" width="8" height="8" rx="2" fill="none" stroke="#B9C4C1" stroke-width="2"/><rect x="29" y="45" width="14" height="3" rx="1.5" fill="#C9D3D0"/></svg></span><span data-t="tileTodo"></span><span class="st" id="stTodo"></span></button>
+  <button class="tile" data-go="ask"><span class="ic"><svg class="icsvg" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="10" width="34" height="44" rx="4" fill="#5DB7A4"/><rect x="8" y="10" width="7" height="44" rx="3" fill="#3F9C89"/><rect x="19" y="18" width="18" height="8" rx="2" fill="#E6F6F2"/><circle cx="40" cy="38" r="12" fill="#E8F6FF" fill-opacity=".85" stroke="#7D8995" stroke-width="4"/><path d="M48.5 46.5l9 9" stroke="#7D8995" stroke-width="6" stroke-linecap="round"/><path d="M36.5 34.5a3.5 3.5 0 1 1 5 3.2c-1.2.6-1.5 1.3-1.5 2.6" fill="none" stroke="#EF6B5E" stroke-width="2.6" stroke-linecap="round"/><circle cx="40" cy="44" r="1.6" fill="#EF6B5E"/></svg></span><span data-t="tileAsk"></span><span class="st" data-t="stAsk"></span></button>
   <button class="tile wide" data-go="voices" id="voiceTile" hidden><span class="ic">💌</span><span id="voiceTileL"></span></button>
  </div>
  <button class="gate" id="gate"><span class="fill"></span><span class="gl" id="gateL"></span></button>
@@ -441,6 +442,8 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
   <p class="lbl" data-t="sizeL" style="margin-top:0"></p><div class="seg" id="sizeSeg"></div>
   <p class="lbl" data-t="autoL"></p><div class="seg" id="autoSeg" style="grid-template-columns:1fr 1fr"></div>
   <p class="lbl" data-t="petMode"></p><div class="seg" id="petSeg" style="grid-template-columns:1fr 1fr"></div>
+  <p class="lbl" data-t="mimiVoiceL"></p><div class="seg" id="mimiSeg" style="grid-template-columns:1fr 1fr"></div>
+  <p class="small-t" id="mimiNote" style="margin:6px 0 0"></p>
  </div>
  <div class="card">
   <p class="lbl" id="voiceLabel" style="margin-top:0"></p>
@@ -1073,6 +1076,7 @@ function renderFamilyScreen(){
  $("maps").value=S.maps;fillVoices();$("voiceTest").textContent=t("voiceTest");
  seg("sizeSeg",["size1","size2","size3"],S.size-1,function(i){S.size=i+1;save();render()});
  seg("autoSeg",["on","off"],S.autoSpeak?0:1,function(i){S.autoSpeak=i===0;save();render()});
+ seg("mimiSeg",["mimiSunny","mimiPhone"],S.mimiVoice==="phone"?1:0,function(i){S.mimiVoice=i?"phone":"sunny";save();render()});$("mimiNote").textContent=t("mimiNote");
  seg("petSeg",["petOn","petOff"],S.petQuiet?1:0,function(i){S.petQuiet=i===1;save();render()});
  var standalone=isStandalone();
  $("installTxt").textContent=standalone?t("installed"):(location.protocol==="file:"?t("installFile")+" ":"")+t("installIOS")+" "+t("installAnd");
@@ -1376,6 +1380,35 @@ function checkTaskReminder(){
  if(!medDue())speak(fmt(t("taskTTS"),{x:fresh[fresh.length-1].name}));
  if(SCREEN==="home")renderHome()}
 
+/* ================= Mimi's voice (AI, from Sunny's recording) =================
+   Fixed sentences were rendered ahead of time with an open-source voice model (CosyVoice 3) in Sunny's voice,
+   on the family computer, and ship with the app as small audio files. speak() plays one of those when the
+   sentence matches; anything else (names, times, journal text) still uses the phone's own voice. */
+var T9={
+zh:{mimiVoiceL:"绵绵的声音",mimiSunny:"Sunny 的声音（AI）",mimiPhone:"手机自带的声音",mimiNote:"绵绵的声音是用开源 AI 语音模型，根据 Sunny 本人同意提供的一段录音，在家里电脑上生成的。固定的提醒用这个声音，名字、时间、日记等临时内容仍用手机自带的声音。"},
+en:{mimiVoiceL:"Mimi's voice",mimiSunny:"Sunny's voice (AI)",mimiPhone:"Phone's own voice",mimiNote:"Mimi's voice was generated on the family computer by an open-source AI voice model from a short recording Sunny agreed to provide. Fixed reminders use it; names, times and journal text still use the phone's voice."},
+es:{mimiVoiceL:"Voz de Mimí",mimiSunny:"Voz de Sunny (IA)",mimiPhone:"Voz del teléfono",mimiNote:"La voz de Mimí se generó en la computadora de la familia con un modelo de voz de IA de código abierto, a partir de una grabación que Sunny aceptó dar. Los avisos fijos la usan; nombres, horas y el diario usan la voz del teléfono."}};
+for(var _v in T9)Object.assign(T[_v],T9[_v]);
+function voiceKey(s){return speechText(s).replace(/[\s，。！？、：；,.!?:;…]/g,"")}
+/* every fixed sentence the app can say; dev/voices.py renders these (count templates are rendered for 1–10) */
+function voicePhrases(){
+ var keys=["tCheck","tWalkT","tJournal","tTodo","tAsk","tVoices","qSleep","qWake","qFall","fallMsg","gameAsk","allDone","medTimeTTS","back2","gTitle",
+  "nSay","nUpSay","nNight","petDone","petNone","nudgeCheck","taskPraise","needDest","needAddr","opened","needPhone","calling","saved","askNone","askNoMed","voiceSample","todoDone"];
+ var out=keys.map(function(k){return t(k)}).concat(t("petHi"),[t("tMed")+" "+t("medNone")]);
+ ["nudgeTodo","petTodo"].forEach(function(k){for(var n=1;n<=10;n++)out.push(fmt(t(k),{n:n}))});
+ var seen={};return out.filter(function(x){var k=voiceKey(x);if(!k||seen[k])return false;seen[k]=1;return true}).map(function(x){return {key:voiceKey(x),text:speechText(x)}})}
+var MIMI={},mimiPlayer=new Audio();mimiPlayer.setAttribute("playsinline","");
+function loadMimi(lang){if(MIMI[lang])return;MIMI[lang]={};
+ fetch("voice/"+lang+"/index.json").then(function(r){return r.ok?r.json():{}}).then(function(m){MIMI[lang]=m||{}}).catch(function(){})}
+var sysSpeak=speak;
+speak=function(s,retry){
+ var file=S.mimiVoice!=="phone"&&(MIMI[S.lang]||{})[voiceKey(s)];
+ if(!file||retry)return sysSpeak(s,retry);
+ try{speechSynthesis.cancel()}catch(e){}
+ try{player.pause()}catch(e){}
+ mimiPlayer.src="voice/"+S.lang+"/"+file;
+ mimiPlayer.play().catch(function(){sysSpeak(s)})};
+
 /* ================= Calendar reminders =================
    A web app can't ring when it is closed, but the phone's own calendar can.
    We hand it a daily repeating event (.ics) at each medicine time; nothing leaves the phone. */
@@ -1443,7 +1476,7 @@ var player=new Audio(),curURL=null;player.setAttribute("playsinline","");
 function playKey(key,after){
  return vget(key).then(function(b){
   if(!b)return false;
-  try{speechSynthesis.cancel()}catch(e){}
+  try{speechSynthesis.cancel();mimiPlayer.pause()}catch(e){}
   if(curURL)URL.revokeObjectURL(curURL);curURL=URL.createObjectURL(b);player.src=curURL;
   player.onended=function(){player.onended=null;if(after)after()};
   return player.play().then(function(){return true},function(){return false})}).catch(function(){return false})}
@@ -1487,7 +1520,7 @@ function renderVoiceCard(){
  $("voiceTile").hidden=!any;$("voiceTileL").textContent=fmt(t("tileVoice"),{n:n})+(unheard.length?" ("+unheard.length+")":"");
  if(!item)return;
  $("vcText").textContent=item.text;card.classList.toggle("soft",!!item.go);setPet("vcPet",item.pet,false);
- petTalk.vcPet=item.key?function(){playKey(item.key).then(function(ok){if(!ok)speak(item.text)})}:null;
+ petTalk.vcPet=item.key?function(){playKey(item.key).then(function(ok){if(!ok)speak(item.tts||item.text)})}:item.tts?function(){speak(item.tts)}:null;
  if(item.task){var db=el("button","big main",t("taskDone"));
   db.onclick=function(){buzz();todoToday();if(S.done.indexOf(item.task.raw)<0)S.done.push(item.task.raw);save();if(!S.petQuiet)speak(t("taskPraise"));renderHome()};
   var ab=el("button","big",t("taskAll"));ab.onclick=function(){buzz();show("todo")};B.appendChild(db);B.appendChild(ab);return}
@@ -1596,7 +1629,7 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-back]"),function(b
 $("demoExit").onclick=exitDemo;
 $("runTests").onclick=runTests;
 $("printBtn").onclick=function(){$("ledgerCard").open=true;window.print()};
-$("lang").onchange=function(){S.lang=this.value;if(REAL)REAL.lang=S.lang;save();render()};
+$("lang").onchange=function(){S.lang=this.value;loadMimi(S.lang);if(REAL)REAL.lang=S.lang;save();render()};
 $("readDay").onclick=function(){
  var parts=[$("date").textContent,fmtTime(Date.now()),timeOfDay()],tm=todayMeds();
  parts.push(tm.length?t("medDone").replace("{t}",fmtTime(tm[tm.length-1])):t("medNone"));
@@ -1728,6 +1761,7 @@ if(S.size==null)S.size=1;if(S.autoSpeak==null)S.autoSpeak=true;
 if(!S.voiceMeta)S.voiceMeta={};if(!S.nightUps)S.nightUps=[];if(!S.messages)S.messages=[];
 if(!S.maps)S.maps=defaultMaps();
 try{history.replaceState({s:"home"},"")}catch(e){}
+loadMimi(S.lang);
 touch();useInc("open");render();checkReminder();tryHello();maybeNight();petAutoTalk();
 /* keep the clock, greeting and walk timer fresh; pick up a new day when the app is reopened */
 setInterval(function(){checkReminder();if(SCREEN==="home"||SCREEN==="walk"||SCREEN==="night")render()},30000);

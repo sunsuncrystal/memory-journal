@@ -59,6 +59,15 @@ A deterministic pipeline of five tools. It runs entirely on the phone and needs 
 
 Wrong decisions: rules only 3, without the critic 2, full SafeSleep 0. Medication name matching: 16/16 test names, including typos ("Ambian", "xanex") and Chinese names (思诺思, 舒乐安定). You can rerun all of this live in the family tab of the desktop demo (*Run all stress tests*).
 
+## Mimi's voice
+
+Phone voices sound robotic, so Mimi speaks in **Sunny's voice**. We recorded 12 seconds of Sunny reading a short script, with her consent. On the family computer, the open-source voice model **CosyVoice 3** (Apache-2.0) then rendered every fixed sentence the app says (58 in Chinese: reminders, check-in questions, night-mode coaching, Mimi's lines). The clips ship with the app (`voice/zh/`, about 15 KB each) and play offline.
+
+- Nothing is uploaded: the model runs locally, and the phone only plays files.
+- Sentences that change (names, times, journal text) still use the phone's voice. Real family recordings always come first.
+- The app says the voice is AI-generated. Family can switch Mimi back to the phone's voice in *Text & read-aloud*.
+- Sunny's original recording is kept off GitHub. To re-render the clips: `tests/export-phrases.js` lists the sentences and `dev/voices.py` renders them (`--check` transcribes each clip with Whisper to catch mistakes).
+
 ## Safety and privacy
 
 - **Never** tells anyone to stop, reduce or change a medicine. The only action it suggests is talking with a doctor or pharmacist.
@@ -79,6 +88,8 @@ index.html        phone app (built; this is what is deployed)
 demo.html         desktop demo; also the source of the strings and the SafeSleep agent
 dev/head.html     phone app HTML and CSS
 dev/ui.js         phone app logic
+dev/voices.py     renders Mimi's voice clips (CosyVoice 3) from dev/phrases-zh.json
+voice/zh/         the rendered clips + index.json
 dev/build.py      builds index.html = dev/head.html + agent from demo.html + dev/ui.js
 tests/run.js      end-to-end tests (Chrome, headless)
 sw.js, manifest.webmanifest, icons/   offline support and install

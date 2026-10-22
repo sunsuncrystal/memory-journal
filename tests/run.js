@@ -196,6 +196,26 @@ function ok(c, msg) { if (!c) throw new Error(msg || 'assertion failed'); }
     const known = await pg.evaluate(() => USE_KEYS);
     ok(Object.keys(u).every(k => known.includes(k)), 'only known counters');
   });
+  await test("Mimi's AI voice plays for fixed sentences; other text and the phone-voice setting use the phone", async () => {
+    const r = await pg.evaluate(() => {
+      const played = [], sys = []; const oldSys = sysSpeak, oldPlay = mimiPlayer.play;
+      sysSpeak = x => sys.push(x); mimiPlayer.play = function () { played.push(this.src.split('/').pop()); return Promise.resolve(); };
+      const keep = MIMI.zh, lang = S.lang, mv = S.mimiVoice; S.lang = 'zh'; MIMI.zh = { [voiceKey(t('nSay'))]: 'abc.m4a' };
+      speak('🌙 ' + t('nSay'));          // same sentence, with an emoji in front
+      speak('10:00 到啦：喝水');           // not a fixed sentence
+      S.mimiVoice = 'phone'; speak(t('nSay'));
+      MIMI.zh = keep; S.lang = lang; S.mimiVoice = mv; sysSpeak = oldSys; mimiPlayer.play = oldPlay;
+      return [played, sys.length];
+    });
+    eq(r, [['abc.m4a'], 2]);
+  });
+  await test('every fixed sentence has a clip, if clips have been rendered', async () => {
+    const fs = require('fs'), dir = path.join(ROOT, 'voice', 'zh');
+    if (!fs.existsSync(path.join(dir, 'index.json'))) return;
+    const idx = JSON.parse(fs.readFileSync(path.join(dir, 'index.json'))), want = await pg.evaluate(() => { const l = S.lang; S.lang = 'zh'; const v = voicePhrases(); S.lang = l; return v.map(x => x.key); });
+    const missing = want.filter(k => !idx[k] || !fs.existsSync(path.join(dir, idx[k])));
+    ok(!missing.length, missing.length + ' missing, e.g. ' + missing.slice(0, 3).join(' / '));
+  });
   await test('phone app has no script errors', async () => eq(pg.errors, []));
 
   console.log('\nNight mode (fake clock 2:10 am)');

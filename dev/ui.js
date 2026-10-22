@@ -189,6 +189,7 @@ function renderFamilyScreen(){
  $("maps").value=S.maps;fillVoices();$("voiceTest").textContent=t("voiceTest");
  seg("sizeSeg",["size1","size2","size3"],S.size-1,function(i){S.size=i+1;save();render()});
  seg("autoSeg",["on","off"],S.autoSpeak?0:1,function(i){S.autoSpeak=i===0;save();render()});
+ seg("mimiSeg",["mimiSunny","mimiPhone"],S.mimiVoice==="phone"?1:0,function(i){S.mimiVoice=i?"phone":"sunny";save();render()});$("mimiNote").textContent=t("mimiNote");
  seg("petSeg",["petOn","petOff"],S.petQuiet?1:0,function(i){S.petQuiet=i===1;save();render()});
  var standalone=isStandalone();
  $("installTxt").textContent=standalone?t("installed"):(location.protocol==="file:"?t("installFile")+" ":"")+t("installIOS")+" "+t("installAnd");
@@ -492,6 +493,35 @@ function checkTaskReminder(){
  if(!medDue())speak(fmt(t("taskTTS"),{x:fresh[fresh.length-1].name}));
  if(SCREEN==="home")renderHome()}
 
+/* ================= Mimi's voice (AI, from Sunny's recording) =================
+   Fixed sentences were rendered ahead of time with an open-source voice model (CosyVoice 3) in Sunny's voice,
+   on the family computer, and ship with the app as small audio files. speak() plays one of those when the
+   sentence matches; anything else (names, times, journal text) still uses the phone's own voice. */
+var T9={
+zh:{mimiVoiceL:"绵绵的声音",mimiSunny:"Sunny 的声音（AI）",mimiPhone:"手机自带的声音",mimiNote:"绵绵的声音是用开源 AI 语音模型，根据 Sunny 本人同意提供的一段录音，在家里电脑上生成的。固定的提醒用这个声音，名字、时间、日记等临时内容仍用手机自带的声音。"},
+en:{mimiVoiceL:"Mimi's voice",mimiSunny:"Sunny's voice (AI)",mimiPhone:"Phone's own voice",mimiNote:"Mimi's voice was generated on the family computer by an open-source AI voice model from a short recording Sunny agreed to provide. Fixed reminders use it; names, times and journal text still use the phone's voice."},
+es:{mimiVoiceL:"Voz de Mimí",mimiSunny:"Voz de Sunny (IA)",mimiPhone:"Voz del teléfono",mimiNote:"La voz de Mimí se generó en la computadora de la familia con un modelo de voz de IA de código abierto, a partir de una grabación que Sunny aceptó dar. Los avisos fijos la usan; nombres, horas y el diario usan la voz del teléfono."}};
+for(var _v in T9)Object.assign(T[_v],T9[_v]);
+function voiceKey(s){return speechText(s).replace(/[\s，。！？、：；,.!?:;…]/g,"")}
+/* every fixed sentence the app can say; dev/voices.py renders these (count templates are rendered for 1–10) */
+function voicePhrases(){
+ var keys=["tCheck","tWalkT","tJournal","tTodo","tAsk","tVoices","qSleep","qWake","qFall","fallMsg","gameAsk","allDone","medTimeTTS","back2","gTitle",
+  "nSay","nUpSay","nNight","petDone","petNone","nudgeCheck","taskPraise","needDest","needAddr","opened","needPhone","calling","saved","askNone","askNoMed","voiceSample","todoDone"];
+ var out=keys.map(function(k){return t(k)}).concat(t("petHi"),[t("tMed")+" "+t("medNone")]);
+ ["nudgeTodo","petTodo"].forEach(function(k){for(var n=1;n<=10;n++)out.push(fmt(t(k),{n:n}))});
+ var seen={};return out.filter(function(x){var k=voiceKey(x);if(!k||seen[k])return false;seen[k]=1;return true}).map(function(x){return {key:voiceKey(x),text:speechText(x)}})}
+var MIMI={},mimiPlayer=new Audio();mimiPlayer.setAttribute("playsinline","");
+function loadMimi(lang){if(MIMI[lang])return;MIMI[lang]={};
+ fetch("voice/"+lang+"/index.json").then(function(r){return r.ok?r.json():{}}).then(function(m){MIMI[lang]=m||{}}).catch(function(){})}
+var sysSpeak=speak;
+speak=function(s,retry){
+ var file=S.mimiVoice!=="phone"&&(MIMI[S.lang]||{})[voiceKey(s)];
+ if(!file||retry)return sysSpeak(s,retry);
+ try{speechSynthesis.cancel()}catch(e){}
+ try{player.pause()}catch(e){}
+ mimiPlayer.src="voice/"+S.lang+"/"+file;
+ mimiPlayer.play().catch(function(){sysSpeak(s)})};
+
 /* ================= Calendar reminders =================
    A web app can't ring when it is closed, but the phone's own calendar can.
    We hand it a daily repeating event (.ics) at each medicine time; nothing leaves the phone. */
@@ -559,7 +589,7 @@ var player=new Audio(),curURL=null;player.setAttribute("playsinline","");
 function playKey(key,after){
  return vget(key).then(function(b){
   if(!b)return false;
-  try{speechSynthesis.cancel()}catch(e){}
+  try{speechSynthesis.cancel();mimiPlayer.pause()}catch(e){}
   if(curURL)URL.revokeObjectURL(curURL);curURL=URL.createObjectURL(b);player.src=curURL;
   player.onended=function(){player.onended=null;if(after)after()};
   return player.play().then(function(){return true},function(){return false})}).catch(function(){return false})}
@@ -603,7 +633,7 @@ function renderVoiceCard(){
  $("voiceTile").hidden=!any;$("voiceTileL").textContent=fmt(t("tileVoice"),{n:n})+(unheard.length?" ("+unheard.length+")":"");
  if(!item)return;
  $("vcText").textContent=item.text;card.classList.toggle("soft",!!item.go);setPet("vcPet",item.pet,false);
- petTalk.vcPet=item.key?function(){playKey(item.key).then(function(ok){if(!ok)speak(item.text)})}:null;
+ petTalk.vcPet=item.key?function(){playKey(item.key).then(function(ok){if(!ok)speak(item.tts||item.text)})}:item.tts?function(){speak(item.tts)}:null;
  if(item.task){var db=el("button","big main",t("taskDone"));
   db.onclick=function(){buzz();todoToday();if(S.done.indexOf(item.task.raw)<0)S.done.push(item.task.raw);save();if(!S.petQuiet)speak(t("taskPraise"));renderHome()};
   var ab=el("button","big",t("taskAll"));ab.onclick=function(){buzz();show("todo")};B.appendChild(db);B.appendChild(ab);return}
@@ -712,7 +742,7 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-back]"),function(b
 $("demoExit").onclick=exitDemo;
 $("runTests").onclick=runTests;
 $("printBtn").onclick=function(){$("ledgerCard").open=true;window.print()};
-$("lang").onchange=function(){S.lang=this.value;if(REAL)REAL.lang=S.lang;save();render()};
+$("lang").onchange=function(){S.lang=this.value;loadMimi(S.lang);if(REAL)REAL.lang=S.lang;save();render()};
 $("readDay").onclick=function(){
  var parts=[$("date").textContent,fmtTime(Date.now()),timeOfDay()],tm=todayMeds();
  parts.push(tm.length?t("medDone").replace("{t}",fmtTime(tm[tm.length-1])):t("medNone"));
@@ -844,6 +874,7 @@ if(S.size==null)S.size=1;if(S.autoSpeak==null)S.autoSpeak=true;
 if(!S.voiceMeta)S.voiceMeta={};if(!S.nightUps)S.nightUps=[];if(!S.messages)S.messages=[];
 if(!S.maps)S.maps=defaultMaps();
 try{history.replaceState({s:"home"},"")}catch(e){}
+loadMimi(S.lang);
 touch();useInc("open");render();checkReminder();tryHello();maybeNight();petAutoTalk();
 /* keep the clock, greeting and walk timer fresh; pick up a new day when the app is reopened */
 setInterval(function(){checkReminder();if(SCREEN==="home"||SCREEN==="walk"||SCREEN==="night")render()},30000);
