@@ -61,7 +61,7 @@ Wrong decisions: rules only 3, without the critic 2, full SafeSleep 0. Medicatio
 
 ## Mimi's voice
 
-Phone voices sound robotic, so Mimi speaks in **Sunny's voice**. We recorded 12 seconds of Sunny reading a short script, with her consent. On the family computer, the open-source voice model **CosyVoice 3** (Apache-2.0) then rendered every fixed sentence the app says (58 in Chinese: reminders, check-in questions, night-mode coaching, Mimi's lines). The clips ship with the app (`voice/zh/`, about 15 KB each) and play offline.
+Phone voices sound robotic, so Mimi speaks in **Sunny's voice**. We recorded 12 seconds of Sunny reading a short script, with her consent. On the family computer, the open-source voice model **CosyVoice 3** (Apache-2.0) then rendered every fixed sentence the app says (60 in Chinese: reminders, check-in questions, night-mode coaching, Mimi's lines). The clips ship with the app (`voice/zh/`, about 15 KB each) and play offline.
 
 - Nothing is uploaded: the model runs locally, and the phone only plays files.
 - Sentences that change (names, times, journal text) still use the phone's voice. Real family recordings always come first.

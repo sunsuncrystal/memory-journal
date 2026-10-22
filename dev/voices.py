@@ -5,8 +5,10 @@
 #   <cosyvoice venv>/bin/python dev/voices.py --lang zh --cosy ~/SafeSleep/voicegen/cosy \
 #       --prompt-wav ~/SafeSleep/voicegen/sunny_prompt.wav --prompt-text "奶奶好，我是Sunny。……"
 #
-# Safe to stop and rerun: clips that already exist are skipped. Each new clip is transcribed with Whisper
-# and re-rendered (up to 6 tries) until it matches its sentence; --check re-checks every existing clip.
+# Safe to stop and rerun: clips that already exist are skipped. Each sentence is rendered several times;
+# every take is transcribed with Whisper, and the shortest take that matches wins (stray sounds at the start
+# make a take longer, and Whisper doesn't hear them). --check re-checks every existing clip, including
+# clips that are unusually long for their text.
 import argparse, hashlib, json, os, subprocess, sys, time, difflib
 
 ap = argparse.ArgumentParser()
@@ -67,10 +69,13 @@ if a.check:
         if not os.path.exists(f):
             continue
         r, heard = score(m, f, p['text'])
-        print('%.2f  %s  |  %s' % (r, p['text'], heard), flush=True)
-        if r < 0.9:
+        secs = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f],
+                                    capture_output=True, text=True).stdout)
+        per = secs / max(1, len(p['key']))
+        print('%.2f  %.2fs/char  %s  |  %s' % (r, per, p['text'], heard), flush=True)
+        if r < 0.9 or per > 0.55:  # typical speech is ~0.4 s per character
             bad.append(fid(p['key']))
-    print('\nlow match (listen, delete and rerun if wrong):', ' '.join(bad) or 'none')
+    print('\nlow match or too long (listen, delete and rerun if wrong):', ' '.join(bad) or 'none')
     sys.exit(0)
 
 cosy = os.path.abspath(os.path.expanduser(a.cosy))
@@ -86,17 +91,18 @@ todo = [p for p in phrases if not os.path.exists(os.path.join(out, fid(p['key'])
 print('%d phrases, %d to render' % (len(phrases), len(todo)), flush=True)
 for i, p in enumerate(todo, 1):
     t0 = time.time()
-    best, best_r = None, -1
+    takes = []  # (passes, -seconds, match, wav)
     for attempt in range(6):
         parts = [j['tts_speech'] for j in model.inference_zero_shot(spoken(p['text']), prompt, prompt_wav, stream=False)]
         wav = os.path.join(out, '_try%d.wav' % attempt)
         torchaudio.save(wav, torch.cat(parts, dim=1), model.sample_rate)
         r, heard = score(checker, wav, p['text'])
-        print('   try %d: %.2f  %s' % (attempt + 1, r, heard), flush=True)
-        if r > best_r:
-            best, best_r = wav, r
-        if r >= 0.9:
+        secs = sum(x.shape[1] for x in parts) / model.sample_rate
+        print('   take %d: %.2f  %.1fs  %s' % (attempt + 1, r, secs, heard), flush=True)
+        takes.append((r >= 0.9, -secs, r, wav))
+        if sum(t[0] for t in takes) >= 3:
             break
+    _, _, best_r, best = max(takes)
     # trim edge silence, even out loudness, small mono AAC that iPhone and Android both play
     subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', best, '-af',
                     'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,loudnorm=I=-16:TP=-1.5',
