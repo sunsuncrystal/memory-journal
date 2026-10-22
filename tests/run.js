@@ -67,6 +67,15 @@ function ok(c, msg) { if (!c) throw new Error(msg || 'assertion failed'); }
     ok(await d.evaluate(() => { const r = runAgent(synth('A'), 'full'), ids = r.ledger.map(e => e.id);
       return r.reasons.length > 0 && r.reasons.every(x => x.ids.every(i => ids.includes(i))); }));
   });
+  await test('speech skips emoji and symbols, so it sounds like a person talking', async () => {
+    eq(await d.evaluate(() => [speechText('💊 家人提醒你：该吃药了'), speechText('还有 2 件，慢慢来～'), speechText('⏰ 10:00 到啦：喝水'), speechText('浇花 ✓'), speechText('🎉')]),
+      ['家人提醒你：该吃药了', '还有 2 件，慢慢来。', '10:00 到啦：喝水', '浇花', '']);
+  });
+  await test('robot and joke voices are never offered; enhanced voices come first', async () => {
+    const r = await d.evaluate(() => { const fake = ['Zarvox', 'Tingting', 'Tingting (Enhanced)', 'Eddy (Chinese (China mainland))', 'Bad News'].map(n => ({ name: n, lang: 'zh-CN', localService: true }));
+      const o = speechSynthesis.getVoices; speechSynthesis.getVoices = () => fake; S.lang = 'zh'; const v = voicesFor().map(x => x.name); speechSynthesis.getVoices = o; return v; });
+    eq(r, ['Tingting (Enhanced)', 'Tingting', 'Eddy (Chinese (China mainland))']);
+  });
   await test('demo page has no script errors', async () => eq(dErr, []));
 
   console.log('\nPhone app (index.html)');

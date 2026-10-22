@@ -345,6 +345,9 @@ function keyTs(k){var p=k.split("-");return new Date(+p[0],p[1]-1,+p[2],12).getT
 function today(){return dk(Date.now())}
 /* Voices: list the ones that match the current language, prefer the natural-sounding ones */
 var GOOD=/natural|premium|enhanced|neural|online|google|siri|tingting|ting-ting|meijia|mei-jia|xiaoxiao|yunxi|huihui|samantha|monica|paulina/i;
+var BEST=/premium|enhanced|natural|neural|高级|增强|優化|优化|siri/i; /* the downloaded high-quality voices */
+var NOVELTY=/\b(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy)\b/i; /* Apple's joke and robot voices: never offered */
+var CARTOON=/\b(eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i; /* fine, but less natural than the regular voices */
 function voicesFor(){
  var lang=t("loc").slice(0,2),vs=[];
  try{vs=speechSynthesis.getVoices().filter(function(v){return v.lang.toLowerCase().replace("_","-").indexOf(lang)===0})}catch(e){}
@@ -352,9 +355,10 @@ function voicesFor(){
  var cloud=vs.filter(function(v){return /^(google|microsoft)/i.test(v.name)});
  if(cloud.length)vs=cloud;
  var exact=t("loc").toLowerCase();
- function score(v){return (v.lang.toLowerCase().replace("_","-")===exact?2:0)+(GOOD.test(v.name)?1:0)}
+ function score(v){return (v.lang.toLowerCase().replace("_","-")===exact?2:0)+(GOOD.test(v.name)?1:0)+(BEST.test(v.name)?3:0)+(v.localService===false?1:0)-(CARTOON.test(v.name)?2:0)}
+ vs=vs.filter(function(v){return !NOVELTY.test(v.name)});
  vs.sort(function(a,b){return score(b)-score(a)});
- return vs.slice(0,5)}
+ return vs.slice(0,12)}
 function bestVoice(){
  var vs=voicesFor();if(!vs.length)return null;
  var want=S.voices[S.lang];
@@ -366,10 +370,16 @@ function voiceLabel(v){
  var region=(t("region")||{})[code]||"";
  return name+(region?"（"+region+"）":"")}
 var lastUtter=null; /* keep a reference: Chrome drops speech it thinks nobody is holding */
+/* What the screen shows is not always what should be heard: emoji get read out by name ("pill", "alarm clock"),
+   and symbols make the voice stumble. Clean the text so it sounds like a person talking. */
+function speechText(s){
+ return String(s).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\u{2300}-\u{23FF}\u{25A0}-\u{25FF}\u{FE0F}\u{200D}\u{20E3}]/gu,"")
+  .replace(/[～~]/g,"。").replace(/\s*[·•|]\s*/g,"，").replace(/[“”"「」]/g,"").replace(/\s{2,}/g," ").replace(/^[\s，。:：]+/,"").trim()}
 function speak(s,retry){
  try{
   speechSynthesis.cancel();
-  var u=new SpeechSynthesisUtterance(s);u.lang=t("loc");u.rate=.9;
+  s=speechText(s);if(!s)return;
+  var u=new SpeechSynthesisUtterance(s);u.lang=t("loc");u.rate=.92;u.pitch=1.05;
   var v=retry?null:bestVoice();if(v)u.voice=v;
   u.onerror=function(ev){
    if(!retry&&ev.error!=="interrupted"&&ev.error!=="canceled"){speak(s,true);return} /* try again with the default voice */
