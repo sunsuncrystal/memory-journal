@@ -165,13 +165,15 @@ function renderJournal(){
 
 function renderTodo(){
  var TL=$("todoList");TL.innerHTML="";var items=todoItems(),done=todoToday();
+ items=items.map(taskParse).sort(function(a,b){return (a.time||"99")<(b.time||"99")?-1:(a.time||"99")>(b.time||"99")?1:0}).map(function(k){return k.raw});
  if(!items.length)TL.appendChild(el("p","huge",t("todoNone")));
  items.forEach(function(x){
   var isDone=done.indexOf(x)>-1,b=el("button","todo"+(isDone?" done":""));
-  b.appendChild(el("span","box",isDone?"✅":"⬜"));b.appendChild(el("span",null,x));
+  var tk=taskParse(x);b.appendChild(el("span","box",isDone?"✅":"⬜"));
+  if(tk.time)b.appendChild(el("span","tt",tk.time));b.appendChild(el("span",null,tk.name));
   b.onclick=function(){buzz();var i=S.done.indexOf(x);if(i>-1)S.done.splice(i,1);else S.done.push(x);save();renderTodo.justDone=i<0;renderTodo();if(S.autoSpeak&&i<0)speak(x+" ✓")};
   TL.appendChild(b)});
- $("todoStatus").textContent=todoLeftText();
+ $("todoStatus").textContent=""; /* Mimi's bubble already says how many are left */
  var left=items.filter(function(x){return done.indexOf(x)<0}).length,fin=items.length&&!left;
  setPet("todoPet",fin?"star":"check",fin,fin&&renderTodo.justDone);renderTodo.justDone=false;
  $("todoSay").textContent=!items.length?t("petNone"):fin?t("petDone"):fmt(t("petTodo"),{n:left})}
@@ -328,6 +330,7 @@ var PET_PROPS={
  sun:'<g transform="translate(83 17)" stroke="#E8A317" stroke-width="2.6" stroke-linecap="round"><path d="M0-15v4M0 11v4M-15 0h4M11 0h4M-10.6-10.6l2.8 2.8M7.8 7.8l2.8 2.8M-10.6 10.6l2.8-2.8M7.8-7.8l2.8-2.8"/><circle r="7.5" fill="#FFC93C" stroke="none"/></g>',
  check:'<g transform="translate(81 70)"><circle r="10" fill="#3FA77F" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M-4.5 0l3 3.2 6-6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>',
  moon:'<g><mask id="moonCut"><rect x="60" y="0" width="40" height="40" fill="#fff"/><circle cx="92" cy="11" r="11" fill="#000"/></mask><circle cx="85" cy="18" r="13" fill="#FFD86B" stroke="#E8A317" stroke-width="2" mask="url(#moonCut)"/><g fill="#FFE9A8"><circle cx="97" cy="33" r="1.8"/><circle cx="64" cy="6" r="1.5"/></g><text x="60" y="24" font-size="10" font-weight="800" fill="#C9B98F" font-family="sans-serif">z</text><text x="66" y="15" font-size="7" font-weight="800" fill="#C9B98F" font-family="sans-serif">z</text></g>',
+ clock:'<g transform="translate(81 69)"><path d="M-9-7a5 5 0 0 1 7-3M9-7a5 5 0 0 0-7-3" fill="#FFC93C" stroke="'+PET_INK+'" stroke-width="2"/><circle r="10" fill="#fff" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M0-6v6l4 3" fill="none" stroke="#E8605A" stroke-width="2.2" stroke-linecap="round"/><path d="M-6 9l-2 3M6 9l2 3" stroke="'+PET_INK+'" stroke-width="2" stroke-linecap="round"/></g>',
  note:'<g fill="#7A6CF0"><path d="M80 8v14.5a4.5 3.6 0 1 1-2.2-3.1V11.5l10-2.5v11a4.5 3.6 0 1 1-2.2-3.1V6z"/><path d="M12 22v9.5a3.6 2.9 0 1 1-1.8-2.5V22z" fill="#E8605A"/></g>',
  star:'<g fill="#FFC93C" stroke="#E8A317" stroke-width="1.5" stroke-linejoin="round"><path d="M84 10l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/><path d="M14 16l1.7 3.4 3.7.5-2.7 2.6.6 3.7-3.3-1.8-3.3 1.8.6-3.7-2.7-2.6 3.7-.5z"/></g>'};
 function mascot(prop,happy){
@@ -439,34 +442,66 @@ $("statsCsv").onclick=function(){
  Object.keys(u).sort().forEach(function(d){rows.push([d].concat(USE_KEYS.map(function(k){return u[d][k]||0})).join(","))});
  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.join("\n")+"\n"],{type:"text/csv"}));a.download="memjournal-usage-"+today()+".csv";document.body.appendChild(a);a.click();a.remove()};
 
+/* ================= Timed daily tasks =================
+   Family can put a time in front of a task ("09:00 喝水", "3点半 打电话"); at that time Mimi reminds her */
+var T8={
+zh:{todoSet:"每天要做的事（每行一件，前面可以写时间）",todoPh:"例如：\n09:00 喝水\n10:30 下楼散步\n15:00 给女儿打电话\n浇花",taskDue:"⏰ {t} 到啦：{x}",taskTTS:"到时间了：{x}。",taskDone:"✅ 做好了",taskAll:"☑️ 看全部",taskPraise:"真棒！",taskHelp:"前面写了时间的事，到时间绵绵会提醒奶奶。"},
+en:{todoSet:"Daily tasks (one per line; put a time first if you like)",todoPh:"e.g.\n09:00 Drink water\n10:30 Walk downstairs\n15:00 Call my daughter\nWater the plants",taskDue:"⏰ It's {t}: {x}",taskTTS:"It's time: {x}.",taskDone:"✅ Done",taskAll:"☑️ See all",taskPraise:"Well done!",taskHelp:"Tasks with a time in front get a reminder from Mimi at that time."},
+es:{todoSet:"Tareas diarias (una por línea; puede poner la hora delante)",todoPh:"Ej.:\n09:00 Beber agua\n10:30 Pasear abajo\n15:00 Llamar a mi hija\nRegar las plantas",taskDue:"⏰ Son las {t}: {x}",taskTTS:"Es la hora: {x}.",taskDone:"✅ Listo",taskAll:"☑️ Ver todas",taskPraise:"¡Muy bien!",taskHelp:"Las tareas con hora delante tendrán un aviso de Mimí a esa hora."}};
+for(var _k in T8)Object.assign(T[_k],T8[_k]);
+function taskParse(x){
+ var m=x.match(/^\s*(\d{1,2})\s*[:：.]\s*(\d{2})\s*(.*)$/),h,mi,rest;
+ if(m){h=+m[1];mi=+m[2];rest=m[3]}
+ else if((m=x.match(/^\s*(上午|早上|中午|下午|晚上)?\s*(\d{1,2})\s*点\s*(半|(\d{1,2})\s*分?)?\s*(.*)$/))){h=+m[2];if(/下午|晚上/.test(m[1]||"")&&h<12)h+=12;mi=m[3]==="半"?30:m[4]?+m[4]:0;rest=m[5]}
+ if(m&&h<24&&mi<60&&rest)return {raw:x,time:pad(h)+":"+pad(mi),name:rest};
+ return {raw:x,time:null,name:x}}
+function toMin(hm){var p=hm.split(":");return +p[0]*60+ +p[1]}
+/* timed tasks that are due now (within the last 3 hours) and not yet ticked off, earliest first */
+function tasksDue(){
+ var n=hhmm(),done=todoToday();
+ return todoItems().map(taskParse).filter(function(k){return k.time&&k.time<=n&&toMin(n)-toMin(k.time)<=180&&done.indexOf(k.raw)<0})
+  .sort(function(a,b){return a.time<b.time?-1:1})}
+function checkTaskReminder(){
+ if(S.demo||isNight()||SCREEN.indexOf("fam")===0)return;
+ var r=S.taskRem&&S.taskRem.d===today()?S.taskRem.k:[],fresh=tasksDue().filter(function(k){return r.indexOf(k.raw)<0});
+ if(!fresh.length)return;
+ S.taskRem={d:today(),k:r.concat(fresh.map(function(k){return k.raw}))};save();
+ try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+ if(!medDue())speak(fmt(t("taskTTS"),{x:fresh[fresh.length-1].name}));
+ if(SCREEN==="home")renderHome()}
+
 /* ================= Calendar reminders =================
    A web app can't ring when it is closed, but the phone's own calendar can.
    We hand it a daily repeating event (.ics) at each medicine time; nothing leaves the phone. */
 var T7={
-zh:{calBtn:"📅 加到手机日历（App 关着也会响）",calHelp:"到吃药时间，手机自带的日历会响铃提醒，就算没打开记忆日记也会响。iPhone 上点了以后选“全部添加”。以后改了吃药时间，要再点一次，并在日历里删掉旧的提醒。",calNeed:"请先在上面设好吃药时间。",calTitle:"💊 该吃药了",calDesc:"吃完药，打开“记忆日记”，按“我已经吃药了”。",
+zh:{calBtn:"📅 加到手机日历（App 关着也会响）",calHelp:"到吃药时间和要做事的时间，手机自带的日历会响铃提醒，就算没打开记忆日记也会响。iPhone 上点了以后选“全部添加”。以后改了吃药时间，要再点一次，并在日历里删掉旧的提醒。",calNeed:"请先设好吃药时间，或者在要做的事前面写上时间。",calTitle:"💊 该吃药了",calDesc:"吃完药，打开“记忆日记”，按“我已经吃药了”。",
  expOk:"已导出，包括 {n} 段录音。",impOkV:"已导入，包括 {n} 段录音。"},
-en:{calBtn:"📅 Add to phone calendar (rings even when the app is closed)",calHelp:"At each medicine time the phone's own calendar rings, even if Memory Journal isn't open. On iPhone, choose “Add All”. If you change the times later, tap this again and delete the old reminders in Calendar.",calNeed:"Set a medicine time above first.",calTitle:"💊 Time for medicine",calDesc:"After taking it, open Memory Journal and tap “I took my medicine”.",
+en:{calBtn:"📅 Add to phone calendar (rings even when the app is closed)",calHelp:"At each medicine time and task time the phone's own calendar rings, even if Memory Journal isn't open. On iPhone, choose “Add All”. If you change the times later, tap this again and delete the old reminders in Calendar.",calNeed:"Set a medicine time, or put a time in front of a task, first.",calTitle:"💊 Time for medicine",calDesc:"After taking it, open Memory Journal and tap “I took my medicine”.",
  expOk:"Exported, including {n} recordings.",impOkV:"Imported, including {n} recordings."},
-es:{calBtn:"📅 Añadir al calendario (suena aunque la app esté cerrada)",calHelp:"A la hora de la medicina, el calendario del teléfono sonará aunque Diario de recuerdos no esté abierto. En iPhone, elija “Añadir todo”. Si cambia las horas, toque de nuevo y borre los avisos viejos en el calendario.",calNeed:"Primero ponga una hora de medicina arriba.",calTitle:"💊 Hora de la medicina",calDesc:"Después de tomarla, abra Diario de recuerdos y toque “Ya tomé mi medicina”.",
+es:{calBtn:"📅 Añadir al calendario (suena aunque la app esté cerrada)",calHelp:"A la hora de la medicina y de cada tarea, el calendario del teléfono sonará aunque Diario de recuerdos no esté abierto. En iPhone, elija “Añadir todo”. Si cambia las horas, toque de nuevo y borre los avisos viejos en el calendario.",calNeed:"Primero ponga una hora de medicina, o una hora delante de una tarea.",calTitle:"💊 Hora de la medicina",calDesc:"Después de tomarla, abra Diario de recuerdos y toque “Ya tomé mi medicina”.",
  expOk:"Exportado, con {n} grabaciones.",impOkV:"Importado, con {n} grabaciones."}};
 for(var _c in T7)Object.assign(T[_c],T7[_c]);
 function icsText(s){return String(s).replace(/\\/g,"\\\\").replace(/([,;])/g,"\\$1").replace(/\n/g,"\\n")}
+function calEvents(){
+ var ev=[S.medTime,S.medTime2].filter(Boolean).map(function(tm){return {time:tm,title:t("calTitle"),desc:t("calDesc"),id:"med"}});
+ todoItems().map(taskParse).filter(function(k){return k.time}).forEach(function(k,i){ev.push({time:k.time,title:"⏰ "+k.name,desc:t("taskHelp"),id:"task"+i})});
+ return ev}
 function buildICS(times,now){
  var d=new Date(now||Date.now()),day=d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
  var stamp=new Date(now||Date.now()).toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
  var url=location.protocol.indexOf("http")===0?location.origin+location.pathname:"";
  var L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Memory Journal//SafeSleep//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
- times.forEach(function(tm){var hm=tm.replace(":","");
-  L.push("BEGIN:VEVENT","UID:memjournal-med-"+hm+"@memory-journal","DTSTAMP:"+stamp,"DTSTART:"+day+"T"+hm+"00","DURATION:PT10M","RRULE:FREQ=DAILY",
-   "SUMMARY:"+icsText(t("calTitle")),"DESCRIPTION:"+icsText(t("calDesc")));
+ times.forEach(function(e){if(typeof e==="string")e={time:e,title:t("calTitle"),desc:t("calDesc"),id:"med"};var hm=e.time.replace(":","");
+  L.push("BEGIN:VEVENT","UID:memjournal-"+e.id+"-"+hm+"@memory-journal","DTSTAMP:"+stamp,"DTSTART:"+day+"T"+hm+"00","DURATION:PT10M","RRULE:FREQ=DAILY",
+   "SUMMARY:"+icsText(e.title),"DESCRIPTION:"+icsText(e.desc));
   if(url)L.push("URL:"+url);
-  L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsText(t("calTitle")),"TRIGGER:PT0M","END:VALARM","END:VEVENT")});
+  L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsText(e.title),"TRIGGER:PT0M","END:VALARM","END:VEVENT")});
  L.push("END:VCALENDAR");return L.join("\r\n")+"\r\n"}
 function saveFile(blob,name){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove()}
-$("calBtn").onclick=function(){
- var times=[S.medTime,S.medTime2].filter(Boolean);
- if(!times.length){vstatus(t("calNeed"));return}
- buzz();var ics=buildICS(times);
+$("calBtn").onclick=$("calBtn2").onclick=function(){
+ var ev=calEvents();
+ if(!ev.length){vstatus(t("calNeed"));$("calStatus2").textContent=t("calNeed");return}
+ buzz();var ics=buildICS(ev);
  /* iPhone Safari offers "Add to Calendar" when it opens calendar data directly; elsewhere a downloaded .ics opens in the calendar app */
  if(/iPhone|iPad|iPod/.test(navigator.userAgent))location.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics);
  else saveFile(new Blob([ics],{type:"text/calendar"}),"medicine-reminder.ics")};
@@ -516,7 +551,9 @@ function hhmm(){var d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes()
 function medPassed(){var n=hhmm();return [S.medTime,S.medTime2].filter(function(x){return x&&x<=n}).length}
 function medDue(){return medPassed()>todayMeds().length}
 function checkReminder(){
- if(document.hidden||!medDue())return;
+ if(document.hidden)return;
+ checkTaskReminder();
+ if(!medDue())return;
  var key=today()+"|"+medPassed();
  if(S.remindKey===key)return;
  S.remindKey=key;save();
@@ -532,6 +569,7 @@ function renderVoiceCard(){
  var card=$("voiceCard"),B=$("vcBtns"),n=vname(),meta=S.voiceMeta||{},msgs=S.messages||[];
  var unheard=msgs.filter(function(m){return !m.heard}),item=null;
  if(medDue())item={text:fmt(t("vcMed"),{n:n}),key:meta.med?"slot:med":null,tts:t("medTimeTTS"),med:true,pet:"pill"};
+ else if(!S.demo&&tasksDue().length){var tk=tasksDue()[tasksDue().length-1];item={text:fmt(t("taskDue"),{t:tk.time,x:tk.name}),task:tk,pet:"clock"}}
  else if(unheard.length){var m=unheard[unheard.length-1];item={text:fmt(t("vcMsg"),{n:n}),key:m.id,pet:"mail",done:function(){m.heard=true}}}
  else if(meta.hello&&S.helloDay!==today())item={text:fmt(t("vcHello"),{n:n}),key:"slot:hello",pet:"sun",done:function(){S.helloDay=today()}};
  if(!item&&!S.demo){var ti=todoItems(),tl=ti.filter(function(x){return todoToday().indexOf(x)<0}).length;
@@ -544,6 +582,9 @@ function renderVoiceCard(){
  if(!item)return;
  $("vcText").textContent=item.text;card.classList.toggle("soft",!!item.go);setPet("vcPet",item.pet,false);
  petTalk.vcPet=item.key?function(){playKey(item.key).then(function(ok){if(!ok)speak(item.text)})}:null;
+ if(item.task){var db=el("button","big main",t("taskDone"));
+  db.onclick=function(){buzz();todoToday();if(S.done.indexOf(item.task.raw)<0)S.done.push(item.task.raw);save();speak(t("taskPraise"));renderHome()};
+  var ab=el("button","big",t("taskAll"));ab.onclick=function(){buzz();show("todo")};B.appendChild(db);B.appendChild(ab);return}
  if(item.go){var nb=el("button","big main",item.btn);nb.onclick=function(){buzz();show(item.go)};B.appendChild(nb);return}
  var lb=el("button","big main",item.key?fmt(t("listen"),{n:n}):t("listenTTS"));
  lb.onclick=function(){buzz();if(item.key)playKey(item.key).then(function(ok){if(!ok&&item.tts)speak(item.tts)});else speak(item.tts);
@@ -599,7 +640,7 @@ function delClip(target){
   save();render()})}
 function renderVoiceSet(){
  $("voiceName").placeholder=t("voiceNamePh");$("voiceName").value=S.voiceName||"";
- $("calBtn").textContent=t("calBtn");$("calHelp").textContent=t("calHelp");
+ $("calBtn").textContent=t("calBtn");$("calBtn2").textContent=t("calBtn");$("taskHelp").textContent=t("taskHelp");$("calHelp").textContent=t("calHelp");
  $("medTime1").value=S.medTime||"";$("medTime2").value=S.medTime2||"";
  var meta=S.voiceMeta||{},SL=$("slotList");SL.innerHTML="";
  function buttons(box,target,has,playKeyName){

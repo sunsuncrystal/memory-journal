@@ -130,6 +130,24 @@ function ok(c, msg) { if (!c) throw new Error(msg || 'assertion failed'); }
     ok(/DTSTART:\d{8}T080000/.test(ics) && /DTSTART:\d{8}T203000/.test(ics), 'start times');
     ok(ics.includes('\r\n'), 'CRLF line endings');
   });
+  await test('task times are understood: "09:00", "9：30", "下午3点半", "8点"', async () => {
+    eq(await pg.evaluate(() => ['09:00 喝水', '9：30 散步', '下午3点半 给女儿打电话', '8点 吃早饭', '浇花'].map(x => taskParse(x).time + '|' + taskParse(x).name)),
+      ['09:00|喝水', '09:30|散步', '15:30|给女儿打电话', '08:00|吃早饭', 'null|浇花']);
+  });
+  await test('a timed task reminds at its time, and "Done" ticks it off', async () => {
+    const tp = await phone(DAY); // 10:00
+    await tp.evaluate(() => { S.checkins[today()] = { sleep: 0, wake: 0, fall: 0 }; S.todo = '09:30 Drink water\n18:00 Call Sunny'; save(); checkReminder(); render(); }); await wait(200);
+    ok((await tp.$eval('#vcText', e => e.textContent)).includes('Drink water'), 'card names the due task');
+    ok(!(await tp.$eval('#vcText', e => e.textContent)).includes('Call Sunny'), 'later task not yet due');
+    await tp.click('#vcBtns button'); await wait(200);
+    ok(await tp.evaluate(() => S.done.includes('09:30 Drink water')), 'ticked off');
+    ok((await tp.$eval('#vcText', e => e.textContent)).indexOf('Drink water') < 0, 'reminder gone');
+    eq(tp.errors, []);
+  });
+  await test('calendar file also includes timed tasks', async () => {
+    const ev = await pg.evaluate(() => { const o = S.todo; S.todo = '09:00 Drink water\nWater plants'; const e = calEvents(); S.todo = o; return e.map(x => x.time); });
+    ok(ev.includes('09:00') && ev.includes('08:00'), JSON.stringify(ev));
+  });
   await test('safety report shows a decision and demo scenario A asks for review', async () => {
     await pg.evaluate(() => { show('famDemo'); enterDemo('A'); }); await wait(400);
     eq(await pg.evaluate(() => [SCREEN, runAgent(S, 'full').tier]), ['famReport', 'review']);

@@ -72,7 +72,7 @@ h3{font-size:1rem;margin:.8rem 0 .3rem}
 .hbub[hidden]{display:none}
 @media (max-width:359px){.hpet .pet{width:70px;height:70px}}
 .pet{position:relative;cursor:pointer;-webkit-user-select:none;user-select:none}
-.pet::after{content:"🔊";position:absolute;right:-2px;bottom:2px;font-size:.75rem;line-height:1;padding:4px;border-radius:50%;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.pet::after{content:"🔊";position:absolute;left:-2px;bottom:2px;font-size:.75rem;line-height:1;padding:4px;border-radius:50%;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.25)}
 .night .pet::after{background:#1B2638}
 .pet.talk svg{animation:talk .45s ease-in-out 2}
 @keyframes talk{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg) translateY(-4px)}75%{transform:rotate(6deg) translateY(-4px)}}
@@ -127,6 +127,7 @@ body.nightOn{background:#0B1220}
 .when{color:var(--soft);font-size:.85rem}
 .entry .acts{display:flex;gap:8px;margin-top:6px}
 .todo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin:10px 0;min-height:4rem;font-size:1.15rem}
+.todo .tt{color:var(--jade);font-weight:800;font-variant-numeric:tabular-nums;flex:none}
 .todo .box{font-size:1.6rem;line-height:1}
 .todo.done{opacity:.55;text-decoration:line-through}
 .timer{font-size:2.6rem;font-weight:800;text-align:center;margin:.4rem 0}
@@ -423,7 +424,8 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
   <p class="lbl" data-t="addr"></p><input id="addr" aria-label="Home address">
   <p class="lbl" data-t="phone"></p><input id="phone" type="tel" aria-label="Family phone">
  </div>
- <div class="card"><p class="lbl" id="todoSetLabel" style="margin-top:0"></p><textarea id="todoSet" rows="5" aria-label="Daily tasks"></textarea></div>
+ <div class="card"><p class="lbl" id="todoSetLabel" style="margin-top:0"></p><textarea id="todoSet" rows="6" aria-label="Daily tasks"></textarea>
+  <p class="small-t" id="taskHelp" style="margin:6px 0 0"></p><button class="small" id="calBtn2" style="margin-top:10px"></button><p class="status" id="calStatus2"></p></div>
  <div class="card"><p class="lbl" data-t="maps" style="margin-top:0"></p><select id="maps" aria-label="Maps" style="width:100%"><option value="google">Google Maps</option><option value="apple">Apple Maps</option></select></div>
 </section>
 
