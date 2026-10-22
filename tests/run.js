@@ -105,6 +105,10 @@ function ok(c, msg) { if (!c) throw new Error(msg || 'assertion failed'); }
     await q.click('#petTog'); await wait(200);
     const r = await q.evaluate(() => { $('homePet').click(); return [S.petQuiet, getComputedStyle($('homePet').querySelector('svg')).animationName, (window.SAID || []).length]; });
     eq(r, [true, 'none', 0]);
+    // quiet Mimi = quiet app: opening screens and tapping buttons say nothing
+    const quietSaid = await q.evaluate(() => { window.SAID = []; show('todo'); goBack(); show('med'); $('med').click(); show('home'); return window.SAID.length; });
+    eq(quietSaid, 0, 'nothing spoken while quiet');
+    await q.evaluate(() => { window.SAID = []; });
     await q.click('#petTog'); await wait(200);
     const r2 = await q.evaluate(() => { $('homePet').click(); return [S.petQuiet, getComputedStyle($('homePet').querySelector('svg')).animationName !== 'none', (window.SAID || []).length]; });
     eq(r2, [false, true, 1]);

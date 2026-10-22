@@ -923,13 +923,13 @@ function show(name,push){
  if(name==="check")CK.step=firstOpenStep();
  render();
  document.body.classList.toggle("nightOn",name==="night");useInc(name);
- if(S.autoSpeak&&name.indexOf("fam")!==0&&name!=="home"&&name!=="night"){
+ if(chatty()&&name.indexOf("fam")!==0&&name!=="home"&&name!=="night"){
   if(name==="check"){if(CK.step!==0||!(S.voiceMeta||{}).check)speakStep()}
   else if(name==="med"){if(todayMeds().length||!(S.voiceMeta||{}).med)speak(t("tMed")+" "+$("medStatus").textContent)}
   else speak(t(TITLE[name]))}
  /* family voice for this moment, if one was recorded */
- if(name==="check"&&CK.step===0&&(S.voiceMeta||{}).check)voiceOr("check",null,S.autoSpeak?speakStep:null);
- if(name==="med"&&!todayMeds().length&&(S.voiceMeta||{}).med)voiceOr("med",null);
+ if(!S.petQuiet&&name==="check"&&CK.step===0&&(S.voiceMeta||{}).check)voiceOr("check",null,chatty()?speakStep:null);
+ if(!S.petQuiet&&name==="med"&&!todayMeds().length&&(S.voiceMeta||{}).med)voiceOr("med",null);
  if(name==="night")enterNightVoice()}
 function goBack(){if(history.state&&history.state.s&&history.state.s!=="home")history.back();else show("home",false)}
 window.addEventListener("popstate",function(e){show(e.state&&e.state.s||"home",false)});
@@ -977,7 +977,7 @@ var QS=[{f:"sleep",q:"qSleep",o:["sl0","sl1","sl2"]},{f:"wake",q:"qWake",o:["wk0
 function firstOpenStep(){var c=S.checkins[today()]||{};for(var i=0;i<QS.length;i++)if(c[QS[i].f]==null)return i;return c.rt?5:4}
 function speakStep(){
  if(CK.step<3)speak(t(QS[CK.step].q));else if(CK.step===3)speak(t("fallMsg"));else if(CK.step===4)speak(t("gameAsk"));else speak(t("allDone"))}
-function nextStep(s){CK.step=s;renderCheck();if(S.autoSpeak)speakStep()}
+function nextStep(s){CK.step=s;renderCheck();if(chatty())speakStep()}
 function renderCheck(){
  var B=$("checkBody"),c=S.checkins[today()]||{};B.innerHTML="";
  if(CK.step<3){
@@ -1044,7 +1044,7 @@ function renderTodo(){
   var isDone=done.indexOf(x)>-1,b=el("button","todo"+(isDone?" done":""));
   var tk=taskParse(x);b.appendChild(el("span","box",isDone?"✅":"⬜"));
   if(tk.time)b.appendChild(el("span","tt",tk.time));b.appendChild(el("span",null,tk.name));
-  b.onclick=function(){buzz();var i=S.done.indexOf(x);if(i>-1)S.done.splice(i,1);else S.done.push(x);save();renderTodo.justDone=i<0;renderTodo();if(S.autoSpeak&&i<0)speak(x+" ✓")};
+  b.onclick=function(){buzz();var i=S.done.indexOf(x);if(i>-1)S.done.splice(i,1);else S.done.push(x);save();renderTodo.justDone=i<0;renderTodo();if(chatty()&&i<0)speak(x+" ✓")};
   TL.appendChild(b)});
  $("todoStatus").textContent=""; /* Mimi's bubble already says how many are left */
  var left=items.filter(function(x){return done.indexOf(x)<0}).length,fin=items.length&&!left;
@@ -1192,9 +1192,9 @@ for(var _m in T3)Object.assign(T[_m],T3[_m]);
 
 /* Mimi (绵绵), a fluffy little sheep who delivers reminders: friendlier than a plain alert, and on-theme for sleep */
 var T5={
-zh:{nudgeCheck:"早上好～今天的早晨打卡还没做哦。",nudgeTodo:"今天还有 {n} 件事，绵绵陪你一起做！",goCheck:"🌅 去打卡",goTodo:"☑️ 去看看",petTodo:"还有 {n} 件，慢慢来～",petDone:"全部做完啦，真棒！🎉",petNone:"家人还没写今天要做的事。",petTap:"点我，绵绵说给你听",petTogQuiet:"🤫 安静",petTogDance:"🎵 跳舞",petMode:"小羊绵绵",petOn:"🎵 跳舞、点了说话",petOff:"🤫 安静",petHi:["你好呀！今天也要开开心心的！","绵绵在这里陪着你～","记得喝点水哦！","你今天真好看！","有事就按“打给家人”哦。"]},
-en:{nudgeCheck:"Good morning! Your morning check-in isn't done yet.",nudgeTodo:"{n} things left today. Mimi will do them with you!",goCheck:"🌅 Do check-in",goTodo:"☑️ Take a look",petTodo:"{n} left. Take your time.",petDone:"All done. Wonderful! 🎉",petNone:"Family hasn't added today's list yet.",petTap:"Tap Mimi to hear it",petTogQuiet:"🤫 Quiet",petTogDance:"🎵 Dance",petMode:"Mimi the sheep",petOn:"🎵 Dances, talks when tapped",petOff:"🤫 Quiet",petHi:["Hello! Have a happy day!","Mimi is right here with you.","Remember to drink some water!","You look lovely today!","Need help? Tap “Call family”."]},
-es:{nudgeCheck:"¡Buenos días! Aún falta el chequeo de la mañana.",nudgeTodo:"Quedan {n} cosas hoy. ¡Mimí te acompaña!",goCheck:"🌅 Hacer chequeo",goTodo:"☑️ Ver la lista",petTodo:"Faltan {n}. Sin prisa.",petDone:"¡Todo listo, muy bien! 🎉",petNone:"La familia aún no agregó tareas.",petTap:"Toca a Mimí para escuchar",petTogQuiet:"🤫 Callada",petTogDance:"🎵 Bailar",petMode:"Mimí la oveja",petOn:"🎵 Baila y habla al tocarla",petOff:"🤫 Callada",petHi:["¡Hola! ¡Que tengas un día feliz!","Mimí está aquí contigo.","¡Recuerda tomar agua!","¡Qué bien te ves hoy!","¿Necesitas ayuda? Toca “Llamar a mi familia”."]}};
+zh:{nudgeCheck:"早上好～今天的早晨打卡还没做哦。",nudgeTodo:"今天还有 {n} 件事，绵绵陪你一起做！",goCheck:"🌅 去打卡",goTodo:"☑️ 去看看",petTodo:"还有 {n} 件，慢慢来～",petDone:"全部做完啦，真棒！🎉",petNone:"家人还没写今天要做的事。",petTap:"点我，绵绵说给你听",petTogQuiet:"🤫 安静",petTogDance:"🎵 跳舞",petMode:"小羊绵绵",petOn:"🎵 跳舞、点了说话",petOff:"🤫 安静（点按钮都不说话）",petHi:["你好呀！今天也要开开心心的！","绵绵在这里陪着你～","记得喝点水哦！","你今天真好看！","有事就按“打给家人”哦。"]},
+en:{nudgeCheck:"Good morning! Your morning check-in isn't done yet.",nudgeTodo:"{n} things left today. Mimi will do them with you!",goCheck:"🌅 Do check-in",goTodo:"☑️ Take a look",petTodo:"{n} left. Take your time.",petDone:"All done. Wonderful! 🎉",petNone:"Family hasn't added today's list yet.",petTap:"Tap Mimi to hear it",petTogQuiet:"🤫 Quiet",petTogDance:"🎵 Dance",petMode:"Mimi the sheep",petOn:"🎵 Dances, talks when tapped",petOff:"🤫 Quiet (buttons don't talk)",petHi:["Hello! Have a happy day!","Mimi is right here with you.","Remember to drink some water!","You look lovely today!","Need help? Tap “Call family”."]},
+es:{nudgeCheck:"¡Buenos días! Aún falta el chequeo de la mañana.",nudgeTodo:"Quedan {n} cosas hoy. ¡Mimí te acompaña!",goCheck:"🌅 Hacer chequeo",goTodo:"☑️ Ver la lista",petTodo:"Faltan {n}. Sin prisa.",petDone:"¡Todo listo, muy bien! 🎉",petNone:"La familia aún no agregó tareas.",petTap:"Toca a Mimí para escuchar",petTogQuiet:"🤫 Callada",petTogDance:"🎵 Bailar",petMode:"Mimí la oveja",petOn:"🎵 Baila y habla al tocarla",petOff:"🤫 Callada (los botones no hablan)",petHi:["¡Hola! ¡Que tengas un día feliz!","Mimí está aquí contigo.","¡Recuerda tomar agua!","¡Qué bien te ves hoy!","¿Necesitas ayuda? Toca “Llamar a mi familia”."]}};
 for(var _n in T5)Object.assign(T[_n],T5[_n]);
 var PET_INK="#5B4636";
 function petWool(c,w){return c.map(function(a){return '<circle cx="'+a[0]+'" cy="'+a[1]+'" r="'+(a[2]+w)+'"/>'}).join("")}
@@ -1224,6 +1224,10 @@ function mascot(prop,happy){
 function setPet(id,prop,happy,cheer){var p=$(id);p.innerHTML=mascot(prop,happy);p.setAttribute("aria-label",t("petTap"));p.classList.toggle("cheer",!!cheer)}
 /* Tap Mimi and she reads her speech bubble aloud; on the reminder card she plays the family recording if there is one */
 var petTalk={};
+/* Quiet Mimi means a quiet app: taps don't trigger speech or family clips. Explicit "read aloud" / "play"
+   buttons and the timed medicine/task reminders still speak. */
+function chatty(){return S.autoSpeak&&!S.petQuiet}
+function msg(id,text){$(id).textContent=text;if(!S.petQuiet)speak(text)} /* replaces the shared msg(): show always, speak only when not quiet */
 function petSay(id){
  var p=$(id);if(!p||S.petQuiet)return;buzz();
  p.classList.remove("talk","cheer");void p.offsetWidth;p.classList.add("talk");setTimeout(function(){p.classList.remove("talk")},950);
@@ -1278,16 +1282,16 @@ function renderNight(){
  var B=$("nBtns");B.innerHTML="";
  if(!done){var b=el("button","big main",up?t("nBack"):t("nUp"));
   b.onclick=function(){buzz();
-   if(NP){if(NP.up){NP.up=0;NP.done=Date.now();if(S.autoSpeak)speak(t("nNight"))}else{NP.up=1;if(S.autoSpeak)speak(t("nUpSay"))}renderNight();return}
-   if(S.upNow){S.nightUps.push({s:S.upNow,e:Date.now()});S.nightUps=S.nightUps.slice(-200);S.upNow=null;nightDone=Date.now();if(S.autoSpeak)speak(t("nNight"))}
-   else{S.upNow=Date.now();nightCount();useInc("nightUp");if(S.autoSpeak)speak(t("nUpSay"))}
+   if(NP){if(NP.up){NP.up=0;NP.done=Date.now();if(chatty())speak(t("nNight"))}else{NP.up=1;if(chatty())speak(t("nUpSay"))}renderNight();return}
+   if(S.upNow){S.nightUps.push({s:S.upNow,e:Date.now()});S.nightUps=S.nightUps.slice(-200);S.upNow=null;nightDone=Date.now();if(chatty())speak(t("nNight"))}
+   else{S.upNow=Date.now();nightCount();useInc("nightUp");if(chatty())speak(t("nUpSay"))}
    save();renderNight()};
   B.appendChild(b)}
  iconBtn("nCall","📞",t("call"));iconBtn("nHome",NP?"←":"🏠",NP?t("nPrevBack"):t("nHome"))}
 $("nCall").onclick=function(){buzz();$("call").click()};
 $("nHome").onclick=function(){buzz();if(NP){NP=null;goBack();return}nightSkip=Date.now();show("home")};
 $("nightPreview").onclick=function(){buzz();NP={up:0,done:0};show("night")};
-function enterNightVoice(){if(S.autoSpeak&&!(NP?NP.up:S.upNow))voiceOr("night",t("nSay"))}
+function enterNightVoice(){if(chatty()&&!(NP?NP.up:S.upNow))voiceOr("night",t("nSay"))}
 function renderNightLog(res){
  var L=$("nightLog");L.innerHTML="";var ups=S.nightUps||[],any=false;
  res.F.keys.slice(N-R).slice().reverse().forEach(function(k){
@@ -1463,7 +1467,7 @@ function renderVoiceCard(){
  $("vcText").textContent=item.text;card.classList.toggle("soft",!!item.go);setPet("vcPet",item.pet,false);
  petTalk.vcPet=item.key?function(){playKey(item.key).then(function(ok){if(!ok)speak(item.text)})}:null;
  if(item.task){var db=el("button","big main",t("taskDone"));
-  db.onclick=function(){buzz();todoToday();if(S.done.indexOf(item.task.raw)<0)S.done.push(item.task.raw);save();speak(t("taskPraise"));renderHome()};
+  db.onclick=function(){buzz();todoToday();if(S.done.indexOf(item.task.raw)<0)S.done.push(item.task.raw);save();if(!S.petQuiet)speak(t("taskPraise"));renderHome()};
   var ab=el("button","big",t("taskAll"));ab.onclick=function(){buzz();show("todo")};B.appendChild(db);B.appendChild(ab);return}
  if(item.go){var nb=el("button","big main",item.btn);nb.onclick=function(){buzz();show(item.go)};B.appendChild(nb);return}
  var lb=el("button","big main",item.key?fmt(t("listen"),{n:n}):t("listenTTS"));
@@ -1598,14 +1602,14 @@ $("med").onclick=function(){
   msg("medNote",t("medDone").replace("{t}",fmtTime(tm[tm.length-1]))+" "+t("medAgain"));setTimeout(function(){medArmed=false;$("medNote").textContent=""},15000);return}
  medArmed=false;S.meds.push(Date.now());useInc("medTaken");S.meds=S.meds.slice(-120);save();renderMed();
  var note=$("medStatus").textContent+" "+t("autoBack");
- if((S.voiceMeta||{}).medDone){$("medNote").textContent=note;voiceOr("medDone",null,function(){if(SCREEN==="med")goBack()})} /* praise in the family's voice, then home */
+ if(!S.petQuiet&&(S.voiceMeta||{}).medDone){$("medNote").textContent=note;voiceOr("medDone",null,function(){if(SCREEN==="med")goBack()})} /* praise in the family's voice, then home */
  else{msg("medNote",note);setTimeout(function(){if(SCREEN==="med")goBack()},2500)}};
-$("goWalk").onclick=function(){buzz();S.walk={dest:$("dest").value.trim()||"…",ts:Date.now()};$("dest").value="";save();render();voiceOr("walk",S.autoSpeak?$("walkStatus").textContent:null)};
+$("goWalk").onclick=function(){buzz();S.walk={dest:$("dest").value.trim()||"…",ts:Date.now()};$("dest").value="";save();render();if(!S.petQuiet)voiceOr("walk",chatty()?$("walkStatus").textContent:null)};
 $("backWalk").onclick=function(){
  buzz();var w=S.walk;
  S.walks.unshift({dest:w.dest,start:w.ts,end:Date.now()});S.walks=S.walks.slice(0,200);
  S.walk=null;S.pendingWalk=true;save();
- show("journal");$("micStatus").textContent=t("back2");voiceOr("home",t("back2"))};
+ show("journal");$("micStatus").textContent=t("back2");if(!S.petQuiet)voiceOr("home",t("back2"))};
 $("addr").onchange=function(){S.addr=this.value;save()};
 $("phone").onchange=function(){S.phone=this.value;save()};
 $("todoSet").onchange=function(){S.todo=this.value;save()};
@@ -1639,7 +1643,7 @@ var G=null;
 function gRound(){
  G.state="wait";$("dot").className="";$("dot").textContent=t("gWait");$("gRound").textContent=fmt(t("gRound"),{i:G.times.length+1,n:G.n});
  G.timer=setTimeout(function(){G.state="go";G.t0=performance.now();$("dot").className="go";$("dot").textContent=t("gTap");$("gStatus").textContent=""},1500+Math.random()*2500)}
-function startGame(){G={n:5,times:[]};$("gTitle").textContent=t("gTitle");$("gClose").textContent=t("gClose");$("gStatus").textContent="";$("game").hidden=false;speak(t("gTitle"));setTimeout(gRound,1200)}
+function startGame(){G={n:5,times:[]};$("gTitle").textContent=t("gTitle");$("gClose").textContent=t("gClose");$("gStatus").textContent="";$("game").hidden=false;if(!S.petQuiet)speak(t("gTitle"));setTimeout(gRound,1200)}
 $("dot").onpointerdown=function(e){
  e.preventDefault();if(!G)return;
  if(G.state==="wait"){clearTimeout(G.timer);G.state="pause";$("gStatus").textContent=t("gEarly");setTimeout(gRound,1300);return}
@@ -1679,7 +1683,7 @@ function doAsk(){
  search(q).forEach(function(r){lines.push(fmtDay(r.e.ts)+": "+r.e.text)});
  if(!lines.length)lines.push(t("askNone"));
  lines.forEach(function(l){box.appendChild(el("p",null,l))});
- speak(lines[0])}
+ if(!S.petQuiet)speak(lines[0])}
 $("askGo").onclick=doAsk;
 $("q").onkeydown=function(e){if(e.key==="Enter")doAsk()};
 $("askMic").onclick=function(){
