@@ -327,7 +327,7 @@ var PET_PROPS={
  mail:'<g transform="translate(80 70) rotate(-8)"><rect x="-12" y="-8" width="24" height="16" rx="2.5" fill="#FFD27A" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M-12 -7l12 8 12-8" fill="none" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M0 5.5c-3-2-4.5-3.5-3-5 1-1 2.2-.6 3 .5.8-1.1 2-1.5 3-.5 1.5 1.5 0 3-3 5z" fill="#E8605A"/></g>',
  sun:'<g transform="translate(83 17)" stroke="#E8A317" stroke-width="2.6" stroke-linecap="round"><path d="M0-15v4M0 11v4M-15 0h4M11 0h4M-10.6-10.6l2.8 2.8M7.8 7.8l2.8 2.8M-10.6 10.6l2.8-2.8M7.8-7.8l2.8-2.8"/><circle r="7.5" fill="#FFC93C" stroke="none"/></g>',
  check:'<g transform="translate(81 70)"><circle r="10" fill="#3FA77F" stroke="'+PET_INK+'" stroke-width="2.2"/><path d="M-4.5 0l3 3.2 6-6.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>',
- moon:'<g><path d="M90 6a11 11 0 1 0 6 19 9 9 0 1 1-6-19z" fill="#FFD86B" stroke="#E8A317" stroke-width="1.5"/><text x="70" y="16" font-size="11" font-weight="700" fill="#C9B98F" font-family="sans-serif">z</text><text x="62" y="9" font-size="8" font-weight="700" fill="#C9B98F" font-family="sans-serif">z</text></g>',
+ moon:'<g><mask id="moonCut"><rect x="60" y="0" width="40" height="40" fill="#fff"/><circle cx="92" cy="11" r="11" fill="#000"/></mask><circle cx="85" cy="18" r="13" fill="#FFD86B" stroke="#E8A317" stroke-width="2" mask="url(#moonCut)"/><g fill="#FFE9A8"><circle cx="97" cy="33" r="1.8"/><circle cx="64" cy="6" r="1.5"/></g><text x="60" y="24" font-size="10" font-weight="800" fill="#C9B98F" font-family="sans-serif">z</text><text x="66" y="15" font-size="7" font-weight="800" fill="#C9B98F" font-family="sans-serif">z</text></g>',
  note:'<g fill="#7A6CF0"><path d="M80 8v14.5a4.5 3.6 0 1 1-2.2-3.1V11.5l10-2.5v11a4.5 3.6 0 1 1-2.2-3.1V6z"/><path d="M12 22v9.5a3.6 2.9 0 1 1-1.8-2.5V22z" fill="#E8605A"/></g>',
  star:'<g fill="#FFC93C" stroke="#E8A317" stroke-width="1.5" stroke-linejoin="round"><path d="M84 10l2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/><path d="M14 16l1.7 3.4 3.7.5-2.7 2.6.6 3.7-3.3-1.8-3.3 1.8.6-3.7-2.7-2.6 3.7-.5z"/></g>'};
 function mascot(prop,happy){
@@ -387,7 +387,7 @@ function nightCount(){ /* same 20-minute de-duplication as the passive midnightâ
  if(Date.now()-(S.nightLast||0)>20*60000){var k=nightKey();S.night[k]=(S.night[k]||0)+1;S.nightLast=Date.now()}}
 function renderNight(){
  if(!NP&&S.upNow&&Date.now()-S.upNow>3*3600000){S.nightUps.push({s:S.upNow,e:null});S.upNow=null;save()} /* forgot to tap "back": keep the trip, drop the duration */
- $("nClock").textContent=fmtTime(Date.now());
+ $("nClock").textContent="ðŸŒ™ "+fmtTime(Date.now());
  var up=NP?!!NP.up:!!S.upNow,done=!up&&Date.now()-(NP?NP.done:nightDone)<60000;
  setPet("nPet","moon",done||!up,false);
  $("nSay").textContent=done?t("nNight"):up?t("nUpSay"):t("nSay");
