@@ -52,7 +52,7 @@ function show(name,push){
  document.body.classList.toggle("nightOn",name==="night");useInc(name);
  if(chatty()&&name.indexOf("fam")!==0&&name!=="home"&&name!=="night"){
   if(name==="check"){if(CK.step!==0||!(S.voiceMeta||{}).check)speakStep()}
-  else if(name==="med"){if(todayMeds().length||!(S.voiceMeta||{}).med)speak(t("tMed")+" "+$("medStatus").textContent)}
+  else if(name==="med"){if(todayMeds().length||!(S.voiceMeta||{}).med)speak(t("tMed")+" "+(todayMeds().length?t("medSayDone"):$("medStatus").textContent))}
   else speak(t(TITLE[name]))}
  /* family voice for this moment, if one was recorded */
  if(!S.petQuiet&&name==="check"&&CK.step===0&&(S.voiceMeta||{}).check)voiceOr("check",null,chatty()?speakStep:null);
@@ -90,10 +90,14 @@ function renderHome(){
  setTile("stJournal",jn?fmt(t("stJournalN"),{n:jn}):t("stJournalNo"),jn?"done":"");
  var items=todoItems(),left=items.filter(function(x){return todoToday().indexOf(x)<0}).length;
  setTile("stTodo",!items.length?t("stTodoNone"):left?fmt(t("stTodo"),{n:left}):t("stTodoDone"),items.length&&!left?"done":"");
- iconBtn("home","🏠",t("home"));iconBtn("call","📞",t("call"));
+ iconBtn("home","home",t("home"));iconBtn("call","call",t("call"));
  $("gateL").textContent=t("gate");
  renderVoiceCard()}
-function iconBtn(id,ic,text){var b=$(id);b.innerHTML="";b.appendChild(el("span","pic",ic));b.appendChild(el("span",null,text))}
+/* hand-drawn icons for the two big buttons, same style as the home tiles */
+var BTN_IC={
+ home:'<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="42" y="12" width="7" height="14" rx="1.5" fill="#B5523F"/><path d="M8 32 32 10l24 22z" fill="#EF6B5E"/><path d="M6 33 32 9.5 58 33" fill="none" stroke="#B5523F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="13" y="31" width="38" height="26" rx="3" fill="#FFF4E0"/><rect x="27" y="40" width="10" height="17" rx="2" fill="#B07A4F"/><circle cx="34.5" cy="49" r="1.2" fill="#FFE2A8"/><rect x="17" y="37" width="8" height="8" rx="1.5" fill="#9ED7F2"/><rect x="39" y="37" width="8" height="8" rx="1.5" fill="#9ED7F2"/><path d="M21 37v8M17 41h8M43 37v8M39 41h8" stroke="#FFF4E0" stroke-width="1.4"/></svg>',
+ call:'<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M20 8c2-1 4 0 5 2l5 10c1 2 .5 4-1 5.5l-4 3.5c3 7 8 12.5 15 15.5l3.5-4c1.5-1.5 3.5-2 5.5-1l10 5c2 1 3 3 2 5l-2.5 5.5C57 58 54 60 50 59.5 30 56 8 34 4.5 14 4 10 6 7 9.5 5.5z" fill="currentColor"/><path d="M38 9a18 18 0 0 1 17 17M37 17a10 10 0 0 1 10 10" fill="none" stroke="currentColor" stroke-opacity=".6" stroke-width="4" stroke-linecap="round"/></svg>'};
+function iconBtn(id,ic,text){var b=$(id);b.innerHTML="";var p=el("span","pic");if(BTN_IC[ic])p.innerHTML=BTN_IC[ic];else p.textContent=ic;b.appendChild(p);b.appendChild(el("span",null,text))}
 function renderMed(){
  var tm=todayMeds();
  $("medStatus").textContent=tm.length?t("medDone").replace("{t}",fmtTime(tm[tm.length-1])):t("medNone");
@@ -374,7 +378,7 @@ function petAutoTalk(){
  setTimeout(function(){
   if(S.petQuiet||!S.autoSpeak||S.demo||isNight()||SCREEN!=="home"||document.hidden)return;
   if(Date.now()-(S.petTalkTs||0)<10*60000)return;
-  try{if(speechSynthesis.speaking||!player.paused)return}catch(e){}
+  try{if(speechSynthesis.speaking||!player.paused||!mimiPlayer.paused)return}catch(e){}
   S.petTalkTs=Date.now();save();
   petSay($("voiceCard").hidden?"homePet":"vcPet")},1500)}
 /* Home Mimi: tap for a little cheerful line in a bubble */
@@ -426,7 +430,7 @@ function renderNight(){
    else{S.upNow=Date.now();nightCount();useInc("nightUp");if(chatty())speak(t("nUpSay"))}
    save();renderNight()};
   B.appendChild(b)}
- iconBtn("nCall","📞",t("call"));iconBtn("nHome",NP?"←":"🏠",NP?t("nPrevBack"):t("nHome"))}
+ iconBtn("nCall","call",t("call"));iconBtn("nHome",NP?"←":"home",NP?t("nPrevBack"):t("nHome"))}
 $("nCall").onclick=function(){buzz();$("call").click()};
 $("nHome").onclick=function(){buzz();if(NP){NP=null;goBack();return}nightSkip=Date.now();show("home")};
 $("nightPreview").onclick=function(){buzz();NP={up:0,done:0};show("night")};
@@ -497,6 +501,12 @@ function checkTaskReminder(){
    Fixed sentences were rendered ahead of time with an open-source voice model (CosyVoice 3) in Sunny's voice,
    on the family computer, and ship with the app as small audio files. speak() plays one of those when the
    sentence matches; anything else (names, times, journal text) still uses the phone's own voice. */
+/* Spoken medicine lines stay fixed (no clock time in them) so they can be in Mimi's voice; the screen shows the time */
+var T10={
+zh:{medSayTaken:"好的，记下了。今天的药吃过了，不用再吃。",medSayAgain:"今天已经吃过药了。只有医生说可以，才再按一次。",medSayDone:"今天的药已经吃过了，不用再吃。"},
+en:{medSayTaken:"Got it. Today's medicine is taken. No need to take more.",medSayAgain:"You already took your medicine today. Only tap again if your doctor said so.",medSayDone:"Today's medicine is already taken. No need to take more."},
+es:{medSayTaken:"Listo, anotado. Ya tomó la medicina de hoy. No necesita más.",medSayAgain:"Ya tomó su medicina hoy. Solo toque otra vez si su médico lo indicó.",medSayDone:"Ya tomó la medicina de hoy. No necesita más."}};
+for(var _w in T10)Object.assign(T[_w],T10[_w]);
 var T9={
 zh:{mimiVoiceL:"绵绵的声音",mimiSunny:"Sunny 的声音（AI）",mimiPhone:"手机自带的声音",mimiNote:"绵绵的声音是用开源 AI 语音模型，根据 Sunny 本人同意提供的一段录音，在家里电脑上生成的。固定的提醒用这个声音，名字、时间、日记等临时内容仍用手机自带的声音。"},
 en:{mimiVoiceL:"Mimi's voice",mimiSunny:"Sunny's voice (AI)",mimiPhone:"Phone's own voice",mimiNote:"Mimi's voice was generated on the family computer by an open-source AI voice model from a short recording Sunny agreed to provide. Fixed reminders use it; names, times and journal text still use the phone's voice."},
@@ -506,8 +516,8 @@ function voiceKey(s){return speechText(s).replace(/[\s，。！？、：；,.!?:
 /* every fixed sentence the app can say; dev/voices.py renders these (count templates are rendered for 1–10) */
 function voicePhrases(){
  var keys=["tCheck","tWalkT","tJournal","tTodo","tAsk","tVoices","qSleep","qWake","qFall","fallMsg","gameAsk","allDone","medTimeTTS","back2","gTitle",
-  "nSay","nUpSay","nNight","petDone","petNone","nudgeCheck","taskPraise","needDest","needAddr","opened","needPhone","calling","saved","askNone","askNoMed","voiceSample","todoDone"];
- var out=keys.map(function(k){return t(k)}).concat(t("petHi"),[t("tMed")+" "+t("medNone")]);
+  "nSay","nUpSay","nNight","petDone","petNone","nudgeCheck","taskPraise","needDest","needAddr","opened","needPhone","calling","saved","askNone","askNoMed","voiceSample","todoDone","medSayTaken","medSayAgain"];
+ var out=keys.map(function(k){return t(k)}).concat(t("petHi"),[t("tMed")+" "+t("medNone"),t("tMed")+" "+t("medSayDone")]);
  ["nudgeTodo","petTodo"].forEach(function(k){for(var n=1;n<=10;n++)out.push(fmt(t(k),{n:n}))});
  var seen={};return out.filter(function(x){var k=voiceKey(x);if(!k||seen[k])return false;seen[k]=1;return true}).map(function(x){return {key:voiceKey(x),text:speechText(x)}})}
 var MIMI={},mimiPlayer=new Audio();mimiPlayer.setAttribute("playsinline","");
@@ -767,11 +777,11 @@ var medArmed=false;
 $("med").onclick=function(){
  buzz();var tm=todayMeds();
  if(tm.length&&!medArmed){medArmed=true;S.dup[today()]=1;save(); /* a repeat-dose attempt is itself a memory/safety signal */
-  msg("medNote",t("medDone").replace("{t}",fmtTime(tm[tm.length-1]))+" "+t("medAgain"));setTimeout(function(){medArmed=false;$("medNote").textContent=""},15000);return}
+  $("medNote").textContent=t("medDone").replace("{t}",fmtTime(tm[tm.length-1]))+" "+t("medAgain");if(!S.petQuiet)speak(t("medSayAgain"));setTimeout(function(){medArmed=false;$("medNote").textContent=""},15000);return}
  medArmed=false;S.meds.push(Date.now());useInc("medTaken");S.meds=S.meds.slice(-120);save();renderMed();
  var note=$("medStatus").textContent+" "+t("autoBack");
  if(!S.petQuiet&&(S.voiceMeta||{}).medDone){$("medNote").textContent=note;voiceOr("medDone",null,function(){if(SCREEN==="med")goBack()})} /* praise in the family's voice, then home */
- else{msg("medNote",note);setTimeout(function(){if(SCREEN==="med")goBack()},2500)}};
+ else{$("medNote").textContent=note;if(!S.petQuiet)speak(t("medSayTaken"));setTimeout(function(){if(SCREEN==="med")goBack()},2500)}};
 $("goWalk").onclick=function(){buzz();S.walk={dest:$("dest").value.trim()||"…",ts:Date.now()};$("dest").value="";save();render();if(!S.petQuiet)voiceOr("walk",chatty()?$("walkStatus").textContent:null)};
 $("backWalk").onclick=function(){
  buzz();var w=S.walk;
