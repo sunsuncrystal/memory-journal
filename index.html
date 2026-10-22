@@ -930,6 +930,7 @@ function show(name,push){
  /* family voice for this moment, if one was recorded */
  if(!S.petQuiet&&name==="check"&&CK.step===0&&(S.voiceMeta||{}).check)voiceOr("check",null,chatty()?speakStep:null);
  if(!S.petQuiet&&name==="med"&&!todayMeds().length&&(S.voiceMeta||{}).med)voiceOr("med",null);
+ if(name==="home")petAutoTalk();
  if(name==="night")enterNightVoice()}
 function goBack(){if(history.state&&history.state.s&&history.state.s!=="home")history.back();else show("home",false)}
 window.addEventListener("popstate",function(e){show(e.state&&e.state.s||"home",false)});
@@ -1237,7 +1238,17 @@ function applyPetMode(){
  document.body.classList.toggle("petQuiet",!!S.petQuiet);
  var b=$("petTog");b.textContent=S.petQuiet?t("petTogDance"):t("petTogQuiet");b.setAttribute("aria-pressed",!!S.petQuiet);
  Array.prototype.forEach.call(document.querySelectorAll(".pet"),function(p){if(S.petQuiet)p.removeAttribute("role");else p.setAttribute("role","button")})}
-$("petTog").onclick=function(){buzz();S.petQuiet=!S.petQuiet;save();$("homeBub").hidden=true;try{speechSynthesis.cancel()}catch(e){}render()};
+$("petTog").onclick=function(){buzz();S.petQuiet=!S.petQuiet;save();$("homeBub").hidden=true;try{speechSynthesis.cancel()}catch(e){}render();
+ if(!S.petQuiet)petSay($("voiceCard").hidden?"homePet":"vcPet")};
+/* Dancing Mimi talks on her own: when grandma comes back to the home screen she reads out the reminder card,
+   or says a cheerful line. At most once every 10 minutes, never at night, never over another voice. */
+function petAutoTalk(){
+ setTimeout(function(){
+  if(S.petQuiet||!S.autoSpeak||S.demo||isNight()||SCREEN!=="home"||document.hidden)return;
+  if(Date.now()-(S.petTalkTs||0)<10*60000)return;
+  try{if(speechSynthesis.speaking||!player.paused)return}catch(e){}
+  S.petTalkTs=Date.now();save();
+  petSay($("voiceCard").hidden?"homePet":"vcPet")},1500)}
 /* Home Mimi: tap for a little cheerful line in a bubble */
 var bubTimer=null;
 petTalk.homePet=function(){var L=t("petHi"),x=L[Math.floor(Math.random()*L.length)],b=$("homeBub");
@@ -1706,10 +1717,10 @@ if(S.size==null)S.size=1;if(S.autoSpeak==null)S.autoSpeak=true;
 if(!S.voiceMeta)S.voiceMeta={};if(!S.nightUps)S.nightUps=[];if(!S.messages)S.messages=[];
 if(!S.maps)S.maps=defaultMaps();
 try{history.replaceState({s:"home"},"")}catch(e){}
-touch();useInc("open");render();checkReminder();tryHello();maybeNight();
+touch();useInc("open");render();checkReminder();tryHello();maybeNight();petAutoTalk();
 /* keep the clock, greeting and walk timer fresh; pick up a new day when the app is reopened */
 setInterval(function(){checkReminder();if(SCREEN==="home"||SCREEN==="walk"||SCREEN==="night")render()},30000);
-document.addEventListener("visibilitychange",function(){if(!document.hidden){touch();useInc("open");render();checkReminder();tryHello();maybeNight()}});
+document.addEventListener("visibilitychange",function(){if(!document.hidden){touch();useInc("open");render();checkReminder();tryHello();maybeNight();petAutoTalk()}});
 </script>
 </body>
 </html>

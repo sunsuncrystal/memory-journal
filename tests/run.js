@@ -111,7 +111,20 @@ function ok(c, msg) { if (!c) throw new Error(msg || 'assertion failed'); }
     await q.evaluate(() => { window.SAID = []; });
     await q.click('#petTog'); await wait(200);
     const r2 = await q.evaluate(() => { $('homePet').click(); return [S.petQuiet, getComputedStyle($('homePet').querySelector('svg')).animationName !== 'none', (window.SAID || []).length]; });
-    eq(r2, [false, true, 1]);
+    eq(r2, [false, true, 2]); // switching back to dancing says hello, then the tap talks
+    eq(q.errors, []);
+  });
+  await test('dancing Mimi talks on her own when grandma returns home, at most every 10 minutes; quiet Mimi does not', async () => {
+    const q = await phone([2026, 9, 21, 15, 0]);
+    // opening the walk screen reads its title, so start counting only once we head back home
+    await q.evaluate(() => { window.SAID = []; speak = x => { window.SAID.push(x); }; S.petTalkTs = 0; show('walk'); window.SAID = []; goBack(); });
+    await wait(1900);
+    eq(await q.evaluate(() => window.SAID.length), 1, 'talks once');
+    ok(!(await q.$eval('#homeBub', e => e.hidden)), 'bubble shows what she said');
+    await q.evaluate(() => { show('walk'); window.SAID = []; goBack(); }); await wait(1900);
+    eq(await q.evaluate(() => window.SAID.length), 0, 'not again within 10 minutes');
+    await q.evaluate(() => { S.petTalkTs = 0; S.petQuiet = true; render(); show('walk'); window.SAID = []; goBack(); }); await wait(1900);
+    eq(await q.evaluate(() => window.SAID.length), 0, 'quiet: silent');
     eq(q.errors, []);
   });
   await test('holding "Family" for 2 seconds opens the family hub (and the release does not tap a row)', async () => {
