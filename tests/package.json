@@ -1,0 +1,6 @@
+{
+  "name": "memory-journal-tests",
+  "private": true,
+  "scripts": { "test": "node run.js" },
+  "devDependencies": { "puppeteer-core": "22.15.0" }
+}

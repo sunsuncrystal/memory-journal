@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>记忆日记</title>
+<meta name="theme-color" content="#2A7A68">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="记忆日记">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{--bg:#EDF3F2;--card:#FFFFFF;--ink:#13302F;--soft:#4F6B69;--jade:#2A7A68;--jadeInk:#FFFFFF;--warn:#B4472F;--line:#C9DBD8;
+--call:#1D5BB8;--callInk:#FFFFFF;--amber:#9A5B00;--amberBg:#FFF3DC;--okBg:#E3F4EE;--grayBg:#EEF1F4;--gray:#4A5866;--recent:rgba(214,150,40,.16);--scale:1}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1E1D;--card:#182C2A;--ink:#EAF4F2;--soft:#A9C4C0;--jade:#5BC2A8;--jadeInk:#06201A;--warn:#F08A70;--line:#2B4744;--call:#7FB0F5;--callInk:#071A33;--amber:#F2B65A;--amberBg:#3A2C12;--okBg:#163A31;--grayBg:#22303A;--gray:#B8C6D2;--recent:rgba(242,182,90,.14)}}
+:root[data-theme="dark"]{--bg:#0F1E1D;--card:#182C2A;--ink:#EAF4F2;--soft:#A9C4C0;--jade:#5BC2A8;--jadeInk:#06201A;--warn:#F08A70;--line:#2B4744;--call:#7FB0F5;--callInk:#071A33;--amber:#F2B65A;--amberBg:#3A2C12;--okBg:#163A31;--grayBg:#22303A;--gray:#B8C6D2;--recent:rgba(242,182,90,.14)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:calc(21px * var(--scale));-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:1rem;line-height:1.5;overscroll-behavior-y:none}
+.screen{max-width:640px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(env(safe-area-inset-bottom,0px) + 28px);min-height:100vh}
+.screen[hidden]{display:none}
+select,input,textarea{font:inherit;font-size:max(16px,1rem);padding:.5rem .65rem;border:2px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);width:100%}
+select{width:auto}
+button{font:inherit;font-weight:700;font-size:1.05rem;min-height:3.2rem;padding:.55rem .9rem;border-radius:18px;border:2.5px solid var(--jade);background:var(--card);color:var(--ink);cursor:pointer;width:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+button:active{transform:scale(.98)}
+button.main{background:var(--jade);color:var(--jadeInk)}
+button.small{min-height:2.4rem;font-size:.85rem;width:auto;border-width:2px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:4px solid var(--warn);outline-offset:2px}
+.big{min-height:4rem;font-size:1.2rem;border-radius:22px}
+.call{background:var(--call);border-color:var(--call);color:var(--callInk)}
+.row{display:grid;gap:12px}
+.sub{color:var(--soft);margin:0 0 .6rem}
+.status{color:var(--soft);font-size:.9rem;margin:.4rem 0 0;min-height:1.5em}
+.card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:16px;margin:14px 0}
+h2{font-size:1.15rem;margin:0 0 .5rem}
+h3{font-size:1rem;margin:.8rem 0 .3rem}
+/* home */
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.date{font-size:1.75rem;font-weight:800;margin:.5rem 0 0;line-height:1.2}
+.clock{font-size:1.2rem;font-weight:600;color:var(--soft)}
+.plan{color:var(--soft);margin:.2rem 0 .8rem;font-size:.95rem}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pair .big{font-size:1rem;padding:.5rem .3rem;min-height:5rem;line-height:1.25;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.pair .pic{font-size:1.7rem;line-height:1.1}
+#topStatus{min-height:0;margin:.4rem 0}
+.tiles{display:grid;margin-top:4px;grid-template-columns:1fr 1fr;gap:12px}
+.tile{min-height:8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:24px;padding:.6rem .4rem;font-size:1.15rem;line-height:1.25}
+.tile .ic{font-size:2.4rem;line-height:1.1}
+.tile .st{font-size:.8rem;font-weight:600;color:var(--soft);margin-top:2px}
+.tile.done{background:var(--okBg)}
+.tile.todo .st{color:var(--warn)}
+.vcard{background:var(--amberBg);border:2.5px solid var(--amber);border-radius:22px;padding:14px;margin:4px 0 14px}
+.vcard[hidden]{display:none}
+.vcard p{font-size:1.2rem;font-weight:800;margin:0 0 10px;line-height:1.35}
+.vcard.soft{background:var(--okBg);border-color:var(--jade)}
+.vhead{display:flex;align-items:center;gap:10px;margin:0 0 10px}
+.vhead p{flex:1;min-width:0;margin:0;background:var(--card);border-radius:18px;padding:10px 12px;position:relative}
+.vhead p::before{content:"";position:absolute;left:-8px;top:50%;margin-top:-8px;border:8px solid transparent;border-left:0;border-right-color:var(--card)}
+.pet{flex:none;width:88px;height:88px;display:block}
+.pet{position:relative;cursor:pointer;-webkit-user-select:none;user-select:none}
+.pet::after{content:"🔊";position:absolute;right:-2px;bottom:2px;font-size:.75rem;line-height:1;padding:4px;border-radius:50%;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.night .pet::after{background:#1B2638}
+.pet.talk svg{animation:talk .45s ease-in-out 2}
+@keyframes talk{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg) translateY(-4px)}75%{transform:rotate(6deg) translateY(-4px)}}
+.pet svg{width:100%;height:100%;display:block;animation:bob 2.8s ease-in-out infinite;transform-origin:50% 90%}
+.pet.cheer svg{animation:hop .5s ease-out 2,bob 2.8s ease-in-out 1s infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes hop{0%,100%{transform:translateY(0) scale(1)}40%{transform:translateY(-12px) scale(1.04)}}
+@media (prefers-reduced-motion:reduce){.pet svg,.pet.cheer svg{animation:none}}
+.petbox{background:var(--okBg);border-radius:22px;padding:12px;margin:4px 0 6px}
+.petbox p{font-size:1.15rem;font-weight:800;line-height:1.35}
+/* night: dim, warm, high-contrast, whatever the phone theme */
+body.nightOn{background:#0B1220}
+.screen.night{background:#0B1220;color:#F3E9D2}
+.nclock{font-size:2.8rem;font-weight:800;text-align:center;color:#C9B98F;margin:.4rem 0 .6rem}
+.night .vhead p{background:#1B2638;color:#F3E9D2;font-size:1.25rem;font-weight:800;line-height:1.4}
+.night .vhead p::before{border-right-color:#1B2638}
+.ntips{list-style:none;padding:0;margin:6px 0 16px;display:grid;gap:8px}
+.ntips li{background:#141D2C;border-radius:16px;padding:10px 14px;font-size:1.1rem;font-weight:700}
+.night button{background:#16202F;color:#F3E9D2;border-color:#C9A25B}
+.night button.main{background:#C9A25B;color:#1A1408}
+.night .call{background:#2C4B7A;border-color:#2C4B7A;color:#fff}
+.night .row .big{min-height:5.2rem;font-size:1.35rem}
+.nsmall{margin-top:16px}
+#statsTable td:not(:first-child),#statsTable th:not(:first-child){text-align:right}
+.tile.wide{grid-column:1/-1;min-height:4.4rem;flex-direction:row;gap:10px}
+.tile.wide .ic{font-size:1.8rem}
+.tile.wide[hidden]{display:none}
+.tag{background:var(--warn);color:#fff;border-radius:999px;padding:0 8px;font-size:.75rem;margin-left:6px;vertical-align:middle}
+.vrow{border-top:2px solid var(--line);padding:12px 0}
+.vrow:first-child{border-top:0}
+.vrow .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.vrow .big{margin-top:6px}
+.rec-on{background:var(--warn)!important;border-color:var(--warn)!important;color:#fff!important}
+.gate{position:relative;overflow:hidden;margin-top:28px;min-height:2.6rem;font-size:.8rem;font-weight:600;color:var(--soft);border:2px dashed var(--line);background:transparent}
+.gate .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--okBg);transition:none}
+.gate.holding .fill{width:100%;transition:width 1.5s linear}
+.gate .gl{position:relative}
+/* sub-screens */
+.bar{position:sticky;top:0;z-index:3;background:var(--bg);display:flex;align-items:center;gap:12px;padding:calc(env(safe-area-inset-top,0px) + 6px) 0 8px;margin-top:calc(-1 * env(safe-area-inset-top,0px))}
+.bar .back{width:auto;min-width:6.2rem;min-height:3rem;font-size:1rem}
+.bar h1{font-size:1.35rem;margin:0;line-height:1.2}
+.huge{font-size:1.35rem;font-weight:700;margin:.6rem 0 1rem;line-height:1.4}
+.qstep{color:var(--soft);font-size:.9rem;margin:.6rem 0 0}
+.bigq{font-size:1.45rem;font-weight:800;margin:.3rem 0 1rem;line-height:1.35}
+.vchoices{display:grid;gap:12px}
+.vchoices button{min-height:4.4rem;font-size:1.3rem;text-align:left;padding-left:1.1rem;border-radius:22px}
+.vchoices button[aria-pressed="true"]{background:var(--jade);color:var(--jadeInk)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:.5rem 0}
+.chips button{width:auto;min-height:2.8rem;font-size:.95rem;border-radius:999px}
+.entry{border-top:2px solid var(--line);padding:12px 0}
+.entry:first-child{border-top:0}
+.when{color:var(--soft);font-size:.85rem}
+.entry .acts{display:flex;gap:8px;margin-top:6px}
+.todo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin:10px 0;min-height:4rem;font-size:1.15rem}
+.todo .box{font-size:1.6rem;line-height:1}
+.todo.done{opacity:.55;text-decoration:line-through}
+.timer{font-size:2.6rem;font-weight:800;text-align:center;margin:.4rem 0}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg button{min-height:3rem;font-size:.95rem}
+.seg button[aria-pressed="true"]{background:var(--jade);color:var(--jadeInk)}
+.banner{position:sticky;top:0;z-index:5;background:var(--amberBg);color:var(--ink);border-bottom:2px solid var(--amber);padding:calc(env(safe-area-inset-top,0px) + 6px) 14px 6px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:.8rem}
+.banner[hidden]{display:none}
+/* game */
+#game{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+#game[hidden]{display:none}
+#game h2{font-size:1.4rem}
+#dot{width:min(72vw,320px);height:min(72vw,320px);border-radius:50%;border:0;background:var(--line);color:var(--ink);font-size:1.7rem;font-weight:800}
+#dot.go{background:#1F9D55;color:#fff}
+/* family & doctor (denser, for adults reading a report) */
+.fam{font-size:.88rem}
+.fam button{font-size:.95rem}
+.fam .bar h1{font-size:1.2rem}
+.lbl{font-weight:700;margin:.8rem 0 .3rem}
+.group{margin:20px 0 6px;padding-left:8px;font-size:.78rem;font-weight:700;color:var(--soft);letter-spacing:.02em}
+.list{background:var(--card);border:2px solid var(--line);border-radius:18px;overflow:hidden}
+.list.flat{border:0;border-radius:0;background:transparent}
+.li{display:flex;align-items:center;gap:12px;width:100%;min-height:3.7rem;border:0;border-top:1.5px solid var(--line);border-radius:0;background:transparent;text-align:left;padding:.55rem .9rem;font-weight:700}
+.li:first-child{border-top:0}
+.li:active{transform:none;background:var(--okBg)}
+.li .ico{width:2.3rem;height:2.3rem;border-radius:12px;display:grid;place-items:center;font-size:1.2rem;flex:none;background:var(--okBg)}
+.li .tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.li .tx small{font-weight:500;color:var(--soft);font-size:.8rem;margin-top:2px}
+.med .small{flex:none;white-space:nowrap}
+.li .chev{color:var(--soft);font-size:1.5rem;font-weight:400}
+.li.done .ico{background:var(--jade);color:var(--jadeInk)}
+.li.done .tx>span{color:var(--soft);text-decoration:line-through}
+.list.flat .li{padding-left:0;padding-right:0}
+.hero{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;border-radius:20px;padding:16px;margin:8px 0 6px;min-height:0}
+.hero.review{background:var(--amberBg);border-color:var(--amber)}
+.hero.ok{background:var(--okBg);border-color:var(--jade)}
+.hero.abstain{background:var(--grayBg);border-color:var(--gray)}
+.hero .pill{font-size:1.05rem;font-weight:800}
+.hero .hsum{font-weight:500;font-size:.85rem;color:var(--ink)}
+.hero .more{font-size:.85rem;color:var(--jade)}
+.prog{height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px 0 6px}
+.prog i{display:block;height:100%;background:var(--jade);border-radius:99px;transition:width .3s}
+.tier{border-radius:16px;padding:14px 16px;margin:6px 0 12px;border:2px solid}
+.tier.review{background:var(--amberBg);border-color:var(--amber)}
+.tier.ok{background:var(--okBg);border-color:var(--jade)}
+.tier.abstain{background:var(--grayBg);border-color:var(--gray)}
+.tier b{font-size:1.15rem;display:block}
+.small-t{font-size:.82rem;color:var(--soft)}
+.reasons{margin:6px 0 0;padding-left:22px}
+.reasons li{margin:4px 0}
+.cite{font-size:.7rem;font-weight:700;color:var(--soft);border:1px solid var(--line);border-radius:6px;padding:0 5px;margin-left:4px;white-space:nowrap}
+.pipe{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.75rem;margin:4px 0 0}
+.pipe span{border:1.5px solid var(--line);border-radius:999px;padding:2px 10px}
+.pipe i{font-style:normal;color:var(--soft)}
+.chart{margin:4px 0 14px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .lab{font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.chart .lab span{font-weight:400;color:var(--soft);font-size:.75rem}
+.legend{font-size:.75rem;color:var(--soft);display:flex;flex-wrap:wrap;gap:14px}
+table{border-collapse:collapse;width:100%;font-size:.78rem}
+th,td{text-align:left;padding:6px;border-bottom:1.5px solid var(--line);vertical-align:top}
+th{color:var(--soft);font-weight:600}
+.pass{color:var(--jade);font-weight:700}
+.fail{color:var(--warn);font-weight:700}
+.med{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-top:1.5px solid var(--line);padding:10px 0}
+.med:first-child{border-top:0}
+.chip{display:inline-block;font-size:.7rem;border-radius:999px;padding:1px 9px;margin:3px 4px 0 0;border:1.5px solid var(--line)}
+.chip.sed{border-color:var(--amber);color:var(--amber)}
+.chip.beers{border-color:var(--warn);color:var(--warn)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:.7rem}
+.trace li{margin:4px 0}
+.disc{font-size:.78rem;color:var(--soft);border-top:1.5px solid var(--line);padding-top:10px;margin-top:12px}
+.scroll{overflow-x:auto}
+details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
+@media print{
+ body{background:#fff;color:#000}
+ .screen{display:none!important}
+ #sc-famReport{display:block!important;font-size:12px}
+ .noprint,.bar,.banner,#game{display:none!important}
+ .card{border:1px solid #999;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="banner" id="demoBar" hidden><span id="demoText"></span><button class="small" id="demoExit"></button></div>
+
+<!-- ============ HOME ============ -->
+<section class="screen" id="sc-home">
+ <div class="top">
+  <select id="lang" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option></select>
+  <button class="small" id="readDay"></button>
+ </div>
+ <div class="date" id="date"></div>
+ <div class="clock" id="clock"></div>
+ <p class="plan" id="plan"></p>
+ <div class="pair">
+  <button class="big main" id="home"></button>
+  <button class="big call" id="call"></button>
+ </div>
+ <p class="status" id="topStatus"></p>
+ <div class="vcard" id="voiceCard" hidden><div class="vhead"><span class="pet" role="button" tabindex="0" id="vcPet"></span><p id="vcText"></p></div><div class="row" id="vcBtns"></div></div>
+ <div class="tiles">
+  <button class="tile" data-go="med"><span class="ic">💊</span><span data-t="tileMed"></span><span class="st" id="stMed"></span></button>
+  <button class="tile" data-go="check"><span class="ic">🌅</span><span data-t="tileCheck"></span><span class="st" id="stCheck"></span></button>
+  <button class="tile" data-go="walk"><span class="ic">🚶</span><span data-t="tileWalk"></span><span class="st" id="stWalk"></span></button>
+  <button class="tile" data-go="journal"><span class="ic">📖</span><span data-t="tileJournal"></span><span class="st" id="stJournal"></span></button>
+  <button class="tile" data-go="todo"><span class="ic">☑️</span><span data-t="tileTodo"></span><span class="st" id="stTodo"></span></button>
+  <button class="tile" data-go="ask"><span class="ic">❓</span><span data-t="tileAsk"></span><span class="st" data-t="stAsk"></span></button>
+  <button class="tile wide" data-go="voices" id="voiceTile" hidden><span class="ic">💌</span><span id="voiceTileL"></span></button>
+ </div>
+ <button class="gate" id="gate"><span class="fill"></span><span class="gl" id="gateL"></span></button>
+</section>
+
+<!-- ============ MEDICINE ============ -->
+<section class="screen" id="sc-med" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="tMed"></h1></div>
+ <p class="huge" id="medStatus"></p>
+ <button class="big main" id="med"></button>
+ <p class="status" id="medNote"></p>
+</section>
+
+<!-- ============ CHECK-IN (one question per screen) ============ -->
+<section class="screen" id="sc-check" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="tCheck"></h1></div>
+ <div id="checkBody"></div>
+</section>
+
+<!-- ============ WALK ============ -->
+<section class="screen" id="sc-walk" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="tWalkT"></h1></div>
+ <div id="walkIdle">
+  <p class="sub" data-t="dest"></p>
+  <input id="dest" aria-label="Destination">
+  <div class="chips" id="places"></div>
+  <div class="row" style="margin-top:12px">
+   <button class="big main" id="goWalk"></button>
+   <button id="route"></button>
+  </div>
+ </div>
+ <div id="walkOn" hidden>
+  <p class="huge" id="walkStatus"></p>
+  <div class="timer" id="walkTimer"></div>
+  <div class="row">
+   <button class="big main" id="backWalk"></button>
+   <button class="big" id="homeWalk"></button>
+  </div>
+ </div>
+ <p class="status" id="walkMsg"></p>
+ <div id="reassure"></div>
+ <div class="card"><h2 data-t="tWalkLog"></h2><div id="walkLog"></div></div>
+</section>
+
+<!-- ============ JOURNAL ============ -->
+<section class="screen" id="sc-journal" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="tJournal"></h1></div>
+ <textarea id="text" rows="4" aria-label="Journal"></textarea>
+ <div class="row" style="margin-top:12px">
+  <button class="big main" id="mic"></button>
+  <button class="big" id="save"></button>
+ </div>
+ <p class="status" id="micStatus"></p>
+ <div class="card"><h2 data-t="tPast"></h2><div id="list"></div></div>
+</section>
+
+<!-- ============ TODO ============ -->
+<section class="screen" id="sc-todo" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="tTodo"></h1></div>
+ <div class="vhead petbox" id="todoPetBox"><span class="pet" role="button" tabindex="0" id="todoPet"></span><p id="todoSay"></p></div>
+ <div id="todoList"></div>
+ <p class="status" id="todoStatus"></p>
+</section>
+
+<!-- ============ ASK ============ -->
+<section class="screen" id="sc-ask" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="tAsk"></h1></div>
+ <input id="q" aria-label="Question">
+ <div class="row" style="margin-top:12px"><button class="big main" id="askMic"></button><button id="askGo"></button></div>
+ <div id="askOut" style="margin-top:12px;font-size:1.05rem"></div>
+</section>
+
+<!-- ============ FAMILY VOICES (for grandma) ============ -->
+<section class="screen" id="sc-voices" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="tVoices"></h1></div>
+ <div id="voiceList"></div>
+</section>
+
+<!-- ============ FAMILY HUB ============ -->
+<!-- ============ NIGHT (22:00–6:00) ============ -->
+<section class="screen night" id="sc-night" hidden>
+ <div class="nclock" id="nClock"></div>
+ <div class="vhead"><span class="pet" role="button" tabindex="0" id="nPet"></span><p id="nSay"></p></div>
+ <ul class="ntips" id="nTips"></ul>
+ <div class="row" id="nBtns"></div>
+ <div class="pair nsmall"><button class="big call" id="nCall"></button><button class="big" id="nHome"></button></div>
+</section>
+
+<section class="screen fam" id="sc-family" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="tabFam"></h1></div>
+ <button class="hero" data-go="famReport"><span class="pill" id="hubPill"></span><span class="hsum" id="hubSum"></span><span class="more" data-t="reportOpen"></span></button>
+ <div class="card" id="setupCard"><h2 id="setupTitle"></h2><div class="prog"><i id="setupBar"></i></div><div class="list flat" id="setupList"></div></div>
+ <p class="group" data-t="grpCare"></p>
+ <div class="list">
+  <button class="li" data-go="famReport"><span class="ico">🛡️</span><span class="tx"><span data-t="rowReport"></span><small id="subReport"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famMeds"><span class="ico">💊</span><span class="tx"><span data-t="rowMeds"></span><small id="subMeds"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famVoice"><span class="ico">🎙️</span><span class="tx"><span data-t="rowVoice"></span><small id="subVoice"></small></span><span class="chev">›</span></button>
+ </div>
+ <p class="group" data-t="grpSet"></p>
+ <div class="list">
+  <button class="li" data-go="famInfo"><span class="ico">🏠</span><span class="tx"><span data-t="rowInfo"></span><small id="subInfo"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famDisplay"><span class="ico">🔠</span><span class="tx"><span data-t="rowDisplay"></span><small id="subDisplay"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famData"><span class="ico">📲</span><span class="tx"><span data-t="rowData"></span><small data-t="rowDataSub"></small></span><span class="chev">›</span></button>
+ </div>
+ <p class="group" data-t="grpDemo"></p>
+ <div class="list">
+  <button class="li" data-go="famStats"><span class="ico">📊</span><span class="tx"><span data-t="rowStats"></span><small id="subStats"></small></span><span class="chev">›</span></button>
+  <button class="li" data-go="famDemo"><span class="ico">🧪</span><span class="tx"><span data-t="rowDemo"></span><small data-t="rowDemoSub"></small></span><span class="chev">›</span></button>
+ </div>
+ <p class="disc" data-t="disclaimer"></p>
+</section>
+
+<!-- ============ FAMILY: SAFETY REPORT ============ -->
+<section class="screen fam" id="sc-famReport" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgReport"></h1></div>
+ <div class="card">
+  <p class="small-t" id="reportSub" style="margin:0"></p>
+  <div class="pipe" id="pipe"></div>
+  <div id="tierBox"></div>
+  <p class="small-t" id="glance"></p>
+  <button class="small noprint" id="printBtn"></button>
+ </div>
+ <div class="card"><h2 id="tSignals"></h2><div class="legend" id="legend"></div><div id="charts"></div></div>
+ <div class="card" id="nightCard"><h2 data-t="tNightLog"></h2><ul class="reasons" id="nightLog"></ul><p class="small-t" data-t="nlNote"></p></div>
+ <div class="card" id="qsCard"><h2 id="tQs"></h2><ul class="reasons" id="qs"></ul></div>
+ <details class="card" id="ledgerCard">
+  <summary id="tLedger"></summary>
+  <p class="sub" id="ledHead" style="margin:6px 0"></p>
+  <div class="scroll"><table id="ledger"></table></div>
+  <p class="sub" id="traceHead" style="margin:14px 0 4px"></p>
+  <ol class="trace" id="trace"></ol>
+ </details>
+ <p class="disc" id="disc"></p>
+ <span id="tReport" hidden></span>
+</section>
+
+<!-- ============ FAMILY: MEDICATIONS ============ -->
+<section class="screen fam" id="sc-famMeds" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgMeds"></h1></div>
+ <div class="card"><div id="medList"></div></div>
+ <div class="card">
+  <h2 data-t="medAddT"></h2>
+  <p class="lbl" data-t="medNameL" style="margin-top:0"></p>
+  <input id="medName">
+  <p class="status" id="medPreview"></p>
+  <p class="sub" id="medStartL" style="margin:4px 0"></p>
+  <input id="medStart" type="date">
+  <button class="main" id="medAdd" style="margin-top:12px"></button>
+ </div>
+ <span id="tMeds" hidden></span>
+</section>
+
+<!-- ============ FAMILY: VOICES & REMINDERS ============ -->
+<section class="screen fam" id="sc-famVoice" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgVoice"></h1></div>
+ <p class="status" id="voiceStatus" style="min-height:0"></p>
+ <div class="card">
+  <p class="sub" data-t="voiceHelpS"></p>
+  <details><summary class="small-t" data-t="voiceAwayQ" style="min-height:2rem;font-weight:700"></summary><p class="small-t" data-t="voiceAwayA"></p></details>
+  <p class="lbl" data-t="voiceName"></p>
+  <input id="voiceName">
+ </div>
+ <div class="card">
+  <h2 data-t="medTimeL"></h2>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px"><input id="medTime1" type="time" style="min-width:0"><input id="medTime2" type="time" aria-label="2" style="min-width:0"></div>
+  <p class="small-t" data-t="medTime2L" style="margin:6px 0 0"></p>
+  <button class="small" id="calBtn" style="margin-top:12px"></button>
+  <p class="small-t" id="calHelp" style="margin:6px 0 0"></p>
+ </div>
+ <div class="card"><h2 data-t="slotsT"></h2><div id="slotList"></div></div>
+ <div class="card">
+  <h2 data-t="msgs"></h2>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="small" id="msgNew"></button><button class="small" id="msgFile"></button></div>
+  <div id="msgList"></div>
+ </div>
+ <input type="file" id="voiceFile" accept="audio/*" hidden>
+</section>
+
+<!-- ============ FAMILY: GRANDMA'S DETAILS ============ -->
+<section class="screen fam" id="sc-famInfo" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgInfo"></h1></div>
+ <div class="card">
+  <p class="sub" id="setHelp"></p>
+  <p class="lbl" data-t="addr"></p><input id="addr" aria-label="Home address">
+  <p class="lbl" data-t="phone"></p><input id="phone" type="tel" aria-label="Family phone">
+ </div>
+ <div class="card"><p class="lbl" id="todoSetLabel" style="margin-top:0"></p><textarea id="todoSet" rows="5" aria-label="Daily tasks"></textarea></div>
+ <div class="card"><p class="lbl" data-t="maps" style="margin-top:0"></p><select id="maps" aria-label="Maps" style="width:100%"><option value="google">Google Maps</option><option value="apple">Apple Maps</option></select></div>
+</section>
+
+<!-- ============ FAMILY: TEXT & VOICE ============ -->
+<section class="screen fam" id="sc-famDisplay" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgDisplay"></h1></div>
+ <div class="card">
+  <p class="lbl" data-t="sizeL" style="margin-top:0"></p><div class="seg" id="sizeSeg"></div>
+  <p class="lbl" data-t="autoL"></p><div class="seg" id="autoSeg" style="grid-template-columns:1fr 1fr"></div>
+ </div>
+ <div class="card">
+  <p class="lbl" id="voiceLabel" style="margin-top:0"></p>
+  <select id="voice" aria-label="Voice" style="width:100%"></select>
+  <button class="small" id="voiceTest" style="margin-top:12px"></button>
+ </div>
+</section>
+
+<!-- ============ FAMILY: INSTALL & BACKUP ============ -->
+<section class="screen fam" id="sc-famData" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgData"></h1></div>
+ <div class="card"><h2 data-t="tInstall"></h2><p class="sub" id="installTxt"></p><button class="small" id="installBtn" hidden></button></div>
+ <div class="card">
+  <h2 id="tData"></h2>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="small" id="exp"></button><button class="small" id="impBtn"></button><input type="file" id="imp" accept="application/json" hidden></div>
+  <p class="status" id="dataStatus"></p>
+  <p class="sub" id="privacy" style="margin-top:8px"></p>
+ </div>
+</section>
+
+<!-- ============ FAMILY: PILOT USAGE STATS ============ -->
+<section class="screen fam" id="sc-famStats" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="rowStats"></h1></div>
+ <div class="card">
+  <p class="sub" data-t="statsHelp"></p>
+  <p id="statsSum" style="font-weight:700"></p>
+  <div class="scroll"><table id="statsTable"></table></div>
+  <p class="small-t" id="statsNever"></p>
+  <button class="small" id="statsCsv" style="margin-top:10px"></button>
+ </div>
+</section>
+
+<!-- ============ FAMILY: DEMO ============ -->
+<section class="screen fam" id="sc-famDemo" hidden>
+ <div class="bar"><button class="back" data-back></button><h1 data-t="pgDemo"></h1></div>
+ <div class="card noprint" id="demoCard">
+  <p class="sub" id="demoHelp"></p>
+  <div class="row" id="scenarios"></div>
+  <div style="margin-top:12px"><button class="main" id="runTests"></button></div>
+  <div class="scroll" id="testOut" style="margin-top:12px"></div>
+  <span id="tDemo" hidden></span>
+ </div>
+</section>
+
+<div id="game" hidden role="dialog" aria-modal="true">
+ <h2 id="gTitle"></h2>
+ <p class="sub" id="gRound"></p>
+ <button id="dot"></button>
+ <p class="status" id="gStatus" style="font-size:1.1rem"></p>
+ <button class="big" id="gClose" style="max-width:320px"></button>
+</div>
+
+<script>

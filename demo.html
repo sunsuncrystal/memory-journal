@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SafeSleep 记忆日记</title>
+<style>
+:root{--bg:#EDF3F2;--card:#FFFFFF;--ink:#13302F;--soft:#4F6B69;--jade:#2A7A68;--jadeInk:#FFFFFF;--warn:#B4472F;--line:#C9DBD8;
+--amber:#9A5B00;--amberBg:#FFF3DC;--okBg:#E3F4EE;--grayBg:#EEF1F4;--gray:#4A5866;--recent:rgba(214,150,40,.16);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1E1D;--card:#182C2A;--ink:#EAF4F2;--soft:#9DBAB6;--jade:#5BC2A8;--jadeInk:#06201A;--warn:#F08A70;--line:#2B4744;--amber:#F2B65A;--amberBg:#3A2C12;--okBg:#163A31;--grayBg:#22303A;--gray:#B8C6D2;--recent:rgba(242,182,90,.14)}}
+:root[data-theme="dark"]{--bg:#0F1E1D;--card:#182C2A;--ink:#EAF4F2;--soft:#9DBAB6;--jade:#5BC2A8;--jadeInk:#06201A;--warn:#F08A70;--line:#2B4744;--amber:#F2B65A;--amberBg:#3A2C12;--okBg:#163A31;--grayBg:#22303A;--gray:#B8C6D2;--recent:rgba(242,182,90,.14)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;font-size:22px;line-height:1.5}
+main{max-width:680px;margin:0 auto;padding:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+select,input,textarea{font:inherit;font-size:20px;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);width:100%}
+select{width:auto}
+.date{font-size:38px;font-weight:700;margin:14px 0 2px;line-height:1.2}
+.sub{color:var(--soft);margin:0 0 14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}
+h2{font-size:24px;margin:0 0 10px}
+h3{font-size:20px;margin:14px 0 6px}
+button{font:inherit;font-weight:600;font-size:22px;min-height:64px;padding:12px 18px;border-radius:16px;border:2px solid var(--jade);background:var(--card);color:var(--ink);cursor:pointer;width:100%}
+button.main{background:var(--jade);color:var(--jadeInk)}
+button.small{min-height:48px;font-size:18px;width:auto}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:4px solid var(--warn);outline-offset:2px}
+.row{display:grid;gap:12px}
+.status{color:var(--soft);font-size:19px;margin:8px 0 0;min-height:1.5em}
+.entry{border-top:2px solid var(--line);padding:12px 0}
+.entry:first-child{border-top:0}
+.when{color:var(--soft);font-size:18px}
+details summary{cursor:pointer;font-weight:600;min-height:48px}
+.todo{display:flex;align-items:center;gap:14px;width:100%;text-align:left;margin:8px 0}
+.todo .box{font-size:30px;line-height:1}
+.todo.done{opacity:.55;text-decoration:line-through}
+/* tabs */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 0}
+.tabs button{min-height:56px;font-size:20px}
+.tabs button[aria-selected="true"]{background:var(--jade);color:var(--jadeInk)}
+.banner{background:var(--amberBg);color:var(--ink);border:2px solid var(--amber);border-radius:14px;padding:10px 14px;margin:12px 0 0;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:18px}
+/* check-in */
+.q{margin:12px 0 4px;font-weight:600}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.choices.two{grid-template-columns:1fr 1fr}
+.choices button{min-height:60px;font-size:20px;padding:8px}
+.choices button[aria-pressed="true"]{background:var(--jade);color:var(--jadeInk)}
+/* game */
+#game{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+#game[hidden]{display:none}
+#dot{width:min(70vw,320px);height:min(70vw,320px);border-radius:50%;border:0;background:var(--line);color:var(--ink);font-size:34px;font-weight:700}
+#dot.go{background:#1F9D55;color:#fff}
+/* family view */
+.tier{border-radius:16px;padding:14px 16px;margin:6px 0 12px;border:2px solid}
+.tier.review{background:var(--amberBg);border-color:var(--amber)}
+.tier.ok{background:var(--okBg);border-color:var(--jade)}
+.tier.abstain{background:var(--grayBg);border-color:var(--gray)}
+.tier b{font-size:24px;display:block}
+.small-t{font-size:17px;color:var(--soft)}
+.reasons{margin:6px 0 0;padding-left:22px}
+.reasons li{margin:4px 0}
+.cite{font-size:14px;font-weight:700;color:var(--soft);border:1px solid var(--line);border-radius:6px;padding:0 5px;margin-left:4px;white-space:nowrap}
+.pipe{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:15px;margin:4px 0 0}
+.pipe span{border:1.5px solid var(--line);border-radius:999px;padding:2px 10px}
+.pipe i{font-style:normal;color:var(--soft)}
+.chart{margin:4px 0 14px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .lab{font-size:17px;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.chart .lab span{font-weight:400;color:var(--soft);font-size:15px}
+.legend{font-size:15px;color:var(--soft);display:flex;flex-wrap:wrap;gap:14px}
+table{border-collapse:collapse;width:100%;font-size:16px}
+th,td{text-align:left;padding:6px 6px;border-bottom:1.5px solid var(--line);vertical-align:top}
+th{color:var(--soft);font-weight:600}
+.pass{color:var(--jade);font-weight:700}
+.fail{color:var(--warn);font-weight:700}
+.med{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-top:1.5px solid var(--line);padding:10px 0}
+.med:first-child{border-top:0}
+.chip{display:inline-block;font-size:14px;border-radius:999px;padding:1px 9px;margin:3px 4px 0 0;border:1.5px solid var(--line)}
+.chip.sed{border-color:var(--amber);color:var(--amber)}
+.chip.beers{border-color:var(--warn);color:var(--warn)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:14px}
+.trace li{margin:4px 0;font-size:16px}
+.disc{font-size:16px;color:var(--soft);border-top:1.5px solid var(--line);padding-top:10px;margin-top:12px}
+.scroll{overflow-x:auto}
+@media print{
+ body{background:#fff;color:#000;font-size:14px}
+ .noprint,.tabs,.top,#viewToday,#game,.banner button{display:none!important}
+ #viewFamily{display:block!important}
+ .card{border:1px solid #999;break-inside:avoid}
+ button{display:none}
+}
+</style>
+</head>
+<body>
+<main>
+ <div class="top">
+  <select id="lang" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option></select>
+  <button class="small" id="readDay"></button>
+ </div>
+ <div class="tabs" role="tablist">
+  <button role="tab" id="tabToday" aria-selected="true"></button>
+  <button role="tab" id="tabFam" aria-selected="false"></button>
+ </div>
+ <div class="banner" id="demoBar" hidden><span id="demoText"></span><button class="small" id="demoExit"></button></div>
+
+ <!-- ============ TODAY (for the older adult) ============ -->
+ <section id="viewToday">
+ <div class="date" id="date"></div>
+ <p class="sub" id="plan"></p>
+
+ <div class="row">
+  <button class="main" id="home"></button>
+  <button id="call"></button>
+ </div>
+ <p class="status" id="topStatus"></p>
+
+ <div class="card" id="checkCard">
+  <h2 id="tCheck"></h2>
+  <p class="q" id="qSleep"></p>
+  <div class="choices" id="cSleep"></div>
+  <p class="q" id="qWake"></p>
+  <div class="choices" id="cWake"></div>
+  <p class="q" id="qFall"></p>
+  <div class="choices two" id="cFall"></div>
+  <div style="margin-top:14px"><button class="main" id="gameBtn"></button></div>
+  <p class="status" id="checkStatus"></p>
+ </div>
+
+ <div class="card">
+  <h2 id="tMed"></h2>
+  <button class="main" id="med"></button>
+  <p class="status" id="medStatus"></p>
+ </div>
+
+ <div class="card">
+  <h2 id="tTodo"></h2>
+  <div id="todoList"></div>
+  <p class="status" id="todoStatus"></p>
+ </div>
+
+ <div class="card">
+  <h2 id="tWalk"></h2>
+  <input id="dest" aria-label="Destination">
+  <div class="row" style="margin-top:12px">
+   <button id="route"></button>
+   <button id="goWalk"></button>
+   <button id="backWalk" hidden></button>
+  </div>
+  <p class="status" id="walkStatus"></p>
+  <div id="reassure"></div>
+ </div>
+
+ <div class="card"><h2 id="tWalkLog"></h2><div id="walkLog"></div></div>
+
+ <div class="card">
+  <h2 id="tJournal"></h2>
+  <textarea id="text" rows="4" aria-label="Journal"></textarea>
+  <div class="row" style="margin-top:12px">
+   <button class="main" id="mic"></button>
+   <button id="save"></button>
+  </div>
+  <p class="status" id="micStatus"></p>
+ </div>
+
+ <div class="card">
+  <h2 id="tAsk"></h2>
+  <input id="q" aria-label="Question">
+  <div class="row" style="margin-top:12px"><button class="main" id="askMic"></button><button id="askGo"></button></div>
+  <div id="askOut" style="margin-top:12px"></div>
+ </div>
+
+ <div class="card"><h2 id="tPast"></h2><div id="list"></div></div>
+ </section>
+
+ <!-- ============ FAMILY & DOCTOR ============ -->
+ <section id="viewFamily" hidden>
+ <div class="card">
+  <h2 id="tReport"></h2>
+  <p class="small-t" id="reportSub" style="margin:0"></p>
+  <div class="pipe" id="pipe"></div>
+  <div id="tierBox"></div>
+  <p class="small-t" id="glance"></p>
+  <button class="small noprint" id="printBtn"></button>
+ </div>
+
+ <div class="card">
+  <h2 id="tSignals"></h2>
+  <div class="legend" id="legend"></div>
+  <div id="charts"></div>
+ </div>
+
+ <div class="card" id="qsCard">
+  <h2 id="tQs"></h2>
+  <ul class="reasons" id="qs"></ul>
+ </div>
+
+ <div class="card">
+  <h2 id="tMeds"></h2>
+  <div id="medList"></div>
+  <div class="noprint">
+   <input id="medName" style="margin-top:10px">
+   <p class="sub" id="medStartL" style="margin:8px 0 4px"></p>
+   <input id="medStart" type="date">
+   <p class="status" id="medPreview"></p>
+   <button class="main" id="medAdd"></button>
+  </div>
+ </div>
+
+ <details class="card" id="ledgerCard">
+  <summary id="tLedger"></summary>
+  <p class="sub" id="ledHead" style="margin:6px 0"></p>
+  <div class="scroll"><table id="ledger"></table></div>
+  <p class="sub" id="traceHead" style="margin:14px 0 4px"></p>
+  <ol class="trace" id="trace"></ol>
+ </details>
+
+ <div class="card noprint" id="demoCard">
+  <h2 id="tDemo"></h2>
+  <p class="sub" id="demoHelp"></p>
+  <div class="row" id="scenarios"></div>
+  <div style="margin-top:12px"><button class="main" id="runTests"></button></div>
+  <div class="scroll" id="testOut" style="margin-top:12px"></div>
+ </div>
+
+ <details class="card noprint">
+  <summary id="tSet"></summary>
+  <p class="sub" id="setHelp"></p>
+  <input id="addr" aria-label="Home address" style="margin-bottom:12px">
+  <input id="phone" type="tel" aria-label="Family phone" style="margin-bottom:12px">
+  <p class="sub" id="todoSetLabel" style="margin:0 0 6px"></p>
+  <textarea id="todoSet" rows="4" aria-label="Daily tasks" style="margin-bottom:12px"></textarea>
+  <select id="maps" aria-label="Maps" style="width:100%;margin-bottom:12px"><option value="google">Google Maps</option><option value="apple">Apple Maps</option></select>
+  <p class="sub" id="voiceLabel" style="margin:0 0 6px"></p>
+  <select id="voice" aria-label="Voice" style="width:100%"></select>
+  <button class="small" id="voiceTest" style="margin-top:12px"></button>
+  <h3 id="tData"></h3>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="small" id="exp"></button><button class="small" id="impBtn"></button><input type="file" id="imp" accept="application/json" hidden></div>
+  <p class="status" id="dataStatus"></p>
+  <p class="sub" style="margin-top:12px" id="privacy"></p>
+ </details>
+ <p class="disc" id="disc"></p>
+ </section>
+</main>
+
+<div id="game" hidden role="dialog" aria-modal="true">
+ <h2 id="gTitle"></h2>
+ <p class="sub" id="gRound"></p>
+ <button id="dot"></button>
+ <p class="status" id="gStatus" style="font-size:22px"></p>
+ <button class="small" id="gClose"></button>
+</div>
+
+<script>
+var T={
+zh:{loc:"zh-CN",morn:"现在是早上。",aft:"现在是下午。",eve:"现在是晚上。",night:"现在是深夜，该休息了。",todayEntries:"今天的日记：",tTodo:"今天要做的事",todoNone:"请家人在“设置”里填写每天要做的事。",todoLeft:"还有 {n} 件事：",todoDone:"今天的事都做完了。",todoSet:"每天要做的事（每行一件）",todoPh:"例如：\n喝水\n散步\n给女儿打电话",noToday:"今天还没有写日记。",medAgain:"再按一次就再记录一次。（只有医生说可以才再吃）",voice:"朗读的声音（当前语言）",voiceNone:"这台设备没有中文的朗读声音。",region:{cn:"中国大陆",tw:"台湾",hk:"香港",sg:"新加坡",us:"美国",gb:"英国",au:"澳大利亚",in:"印度",es:"西班牙",mx:"墨西哥",ar:"阿根廷",co:"哥伦比亚",cl:"智利",pe:"秘鲁"},voiceTest:"🔊 试听",voiceSample:"你好，今天天气很好。",opened:"正在打开地图…",calling:"正在拨打电话…",readDay:"朗读",plan:"今天是新的一天。需要时，点下面的按钮。",home:"带我回家",call:"打电话给家人",tMed:"吃药了吗？",med:"我已经吃药了",medNone:"今天还没有记录。",medDone:"今天 {t} 已经吃过药了。不用再吃。",medAsk:"再记录一次？（只有医生说可以才再吃）",tWalk:"散步",dest:"我要去哪里？例如：楼下的花园",go:"出发散步",back:"我回来了",out:"出门去：{d}。回来后记得写日记。",back2:"欢迎回家！现在说说散步怎么样。",reass:"你以前的散步：",tJournal:"今天的日记",mic:"🎤 按这里，说话",stop:"⏹ 停止",save:"保存日记",ph:"说话或打字都可以…",listen:"正在听…请说话",nomic:"这个浏览器不能用语音。请用Chrome或Safari，或直接打字。",micErr:"麦克风没有打开。请允许使用麦克风，或直接打字。",saved:"已保存。",tPast:"以前的日记",empty:"还没有日记。",read:"朗读",del:"删除",tSet:"⚙️ 设置",setHelp:"请家人帮忙填写。",addr:"家庭住址",phone:"家人电话",privacy:"所有内容只保存在这台设备上，不会上传。SafeSleep 小助手也完全在这台设备上运行。",needAddr:"请先在“设置”里填写家庭住址。",needPhone:"请先在“设置”里填写家人电话。",ok:"好的",tAsk:"问问我的日记",askPh:"例如：我上次散步怎么样？",askGo:"查找",askMic:"🎤 说出问题",askNone:"日记里没有找到。",askMed:"今天 {t} 吃过药。",askNoMed:"今天还没有吃药的记录。",maps:"地图软件",route:"带我去这里",needDest:"请先写下要去哪里。",tWalkLog:"散步记录",min:"{n} 分钟",noWalks:"还没有散步记录。",askWalk:"散步：{d}，{day}",
+tabToday:"🏠 今天",tabFam:"👪 家人和医生",demoOn:"演示数据 {s}（不会保存）",demoExit:"退出演示",
+tCheck:"🌅 每日小检查",qSleep:"昨晚睡得好吗？",sl0:"😊 好",sl1:"😐 一般",sl2:"😟 不好",qWake:"夜里醒了几次？",wk0:"0 次",wk1:"1–2 次",wk2:"3 次以上",qFall:"昨天有没有摔倒，或者差点摔倒？",fl0:"没有",fl1:"有",fallMsg:"谢谢你告诉我。请告诉家人，可以按“打给家人”。",game:"🎯 反应小游戏（30 秒）",gameDone:"今天的小游戏做完了：{s} 秒。",checkDone:"今天的小检查做完了，谢谢！",checkLeft:"还有 {n} 项没做。",
+gTitle:"看到绿色圆圈，就马上点它",gWait:"等一等…",gTap:"点！",gEarly:"太快了，等变绿再点。",gRound:"第 {i} / {n} 次",gResult:"完成！你的速度是 {s} 秒。谢谢！",gClose:"关闭",
+tReport:"🛡️ SafeSleep 安全小助手",reportSub:"把最近 7 天和这个人自己平时的样子相比。只供参考，不是诊断。",
+tier_review:"⚠️ 建议请医生或药剂师复核",tier_ok:"✅ 没有提醒",tier_abstain:"❔ 信息不够，暂不判断",ts_review:"复核",ts_ok:"无提醒",ts_abstain:"不判断",
+sum_review:"有几项变化在最近 7 天里至少持续了 3 天{med}。这足以建议做一次用药和安全复核，但不代表诊断，也不代表是药物引起的。",sum_med:"，而且用药清单里有安眠/镇静类药物",sum_ok:"和个人平时相比，没有持续的变化。每天都会重新检查。",sum_abstain:"最近的数据太少，无法判断。小助手选择不猜。",sum_fall:"有摔倒或差点摔倒的报告，安全优先。",
+next_review:"下一步：带着这份报告去看医生或药剂师，讨论这些变化和完整的用药清单。不要自己停药或改药。",next_ok:"下一步：继续每天使用。有新的变化会出现在这里。",next_abstain:"下一步：请在接下来 7 天里，至少有 4 天做早上的小检查。",
+whyTitle:"原因（括号里是证据编号）：",conf:"把握程度：{c}",confH:"高",confM:"中",confL:"低",prob:"模型分数：{p}",watch:"只有一项信号有持续变化，先继续观察，不发提醒。",outlier:"已忽略只出现一两天的变化：{c}。",contra:"信号互相矛盾：{c}。已降低把握程度。",contraAR:"散步变少，但反应速度变快",
+disclaimer:"本工具不诊断疾病（如痴呆、谵妄、药物中毒），也从不建议停药、减药或换药。提醒只表示“可能值得复核”，不表示是药物造成的。所有用药决定请由医生或药剂师做出。",
+rs_act:"散步时间比平时少 {pct}%（{p}/7 天）",rs_night:"夜里醒来比平时多（{p}/7 天）",rs_rt:"反应小游戏比平时慢 {pct}%（{p}/7 天）",rs_sleep:"睡眠评价比平时差（{p}/7 天）",rs_fall:"{d} 报告摔倒或差点摔倒",rs_dup:"本周有 {n} 天想重复记录吃药",rs_sed:"正在使用：{m}",
+tSignals:"📈 最近 60 天",sigAct:"散步",sigActU:"分钟/天",sigNight:"夜里醒来",sigNightU:"约次数/晚",sigRt:"反应速度",sigRtU:"毫秒，越低越好",sigSleep:"睡得不好",sigSleepU:"0 好 – 2 不好",legBase:"┅ 个人平时水平",legRecent:"▮ 最近 7 天",legMed:"💊 开始用药",noData:"数据还不够。",
+tMeds:"💊 用药清单（家人填写）",medName:"药名：商品名、通用名、中文名都可以",medStartL:"开始日期",medAdd:"添加",medUnknown:"未识别——请核对拼写",medEmpty:"还没有添加药物。",medFrom:"从 {d} 开始",medMatch:"识别为：{i}（{c}）",
+cls_zdrug:"Z 类安眠药",cls_benzo:"苯二氮䓬类",cls_antihist:"第一代抗组胺药",cls_sedAD:"有镇静作用的抗抑郁药",cls_tca:"三环类抗抑郁药",cls_antipsych:"抗精神病药",cls_gaba:"加巴喷丁类",cls_mel:"褪黑素",cls_other:"其他",beers:"Beers 2023 标准",sedFlag:"镇静",
+tLedger:"🧾 证据清单和小助手步骤（给医生看）",ledHead:"每条结论都对应一条来源：",lhId:"编号",lhSrc:"来源",lhClaim:"内容",traceHead:"小助手的工具调用（按顺序）：",
+led_med:"“{raw}” → {ing}（{cls}）{flags}",led_medU:"“{raw}” → 未能识别，未计入",led_act:"最近中位数 {r} 分钟/天，平时 {b}（{pct}%），{p}/7 天低于平时",led_night:"最近 {r}，平时 {b}，{p}/7 天高于平时",led_rt:"最近 {r} 毫秒，平时 {b} 毫秒（{pct}%），{p}/7 天慢于平时",led_sleep:"最近 {r}，平时 {b}，{p}/7 天差于平时",led_fall:"{d}：摔倒或差点摔倒（自我报告）",led_dup:"最近 7 天中有 {n} 天想重复记录吃药",led_cov:"平时参考 {b} 天；最近 7 天中 {r} 天有数据；{c} 个信号可用",led_model:"透明权重模型 v0.3（未经临床验证）：分数 {p}",
+tr_validate:"平时参考 {b} 天；最近 {r}/7 天；可用信号 {c} 个",tr_meds:"{n} 种药，{s} 种有镇静作用",tr_analyze:"用中位数和 MAD 建立个人基线，计算最近 7 天的偏离和持续天数",tr_risk:"分数 {p}",tr_critic:"决定：{d}",dec_pass:"通过，发出复核提醒",dec_ok:"通过，无提醒",dec_revise:"降级为继续观察",dec_abstain:"放弃判断（信息不足）",dec_safety:"安全优先（有摔倒报告）",tr_explain:"只用已核实的证据写说明（{n} 条）",
+tQs:"🩺 可以问医生的问题",q1:"这些变化大约从 {d} 开始。用药清单里的药，或者身体情况的变化，会不会有关系？",q2:"考虑到这些变化，现在的睡眠用药是否仍然合适？有没有其他选择可以讨论？",q3:"{d} 有摔倒或差点摔倒。需要做跌倒风险评估吗？",q4:"夜里醒来变多了，家里有什么安全措施（比如夜灯、扶手）可以考虑？",q5:"需要的话，可以一起检查完整的用药清单（包括非处方药）吗？",
+print:"🖨️ 打印报告（带去看医生）",tDemo:"🧪 演示和测试",demoHelp:"用合成数据看看小助手在不同情况下怎么判断。合成数据只用来测试工程表现，不是临床证据。",
+scA:"A：开始吃安眠药后，多项信号持续变差",scB:"B：长期用药，只有昨晚很糟",scC:"C：最近数据很少（传感器缺失）",scD:"D：用药稳定，一切正常",
+runTests:"▶️ 运行全部压力测试",testHead:"场景",testExp:"应该",testRules:"只看药物规则",testNoCritic:"没有证据审核",testFull:"SafeSleep 完整版",normTest:"药名识别测试（拼错、商品名、中文名）：{k}/{n} 正确",falseAlerts:"错误提醒：只看规则 {a} 次，没有审核 {b} 次，SafeSleep {c} 次。",
+tData:"💾 数据",exp:"导出数据",impBtn:"导入数据",impOk:"已导入。",impBad:"文件无法读取。",
+how:["检查数据","识别药物","个人基线","风险模型","证据审核","说明"],glance:"最近 7 天：{c} 天做了小检查，散步 {w} 次，吃药记录 {m} 次。",
+demoNotes:["今天去公园散步了，天气很好。","和女儿打了电话，很开心。","晚上睡得不太好，醒了好几次。","早上有点头晕，走路慢一点。"],demoDest:["楼下的花园","公园","超市"]},
+en:{loc:"en-US",morn:"It's morning.",aft:"It's afternoon.",eve:"It's evening.",night:"It's late at night. Time to rest.",todayEntries:"Today's journal:",tTodo:"Things to do today",todoNone:"Ask a family member to add daily tasks in Settings.",todoLeft:"{n} things left:",todoDone:"Everything is done for today.",todoSet:"Daily tasks (one per line)",todoPh:"e.g.\nDrink water\nGo for a walk\nCall my daughter",noToday:"No journal entry yet today.",medAgain:"Tap once more to record it again. (Only take more if your doctor says so)",voice:"Reading voice (for this language)",voiceNone:"This device has no English reading voice.",region:{cn:"Mainland China",tw:"Taiwan",hk:"Hong Kong",sg:"Singapore",us:"US",gb:"UK",au:"Australia",in:"India",es:"Spain",mx:"Mexico",ar:"Argentina",co:"Colombia",cl:"Chile",pe:"Peru"},voiceTest:"🔊 Try the voice",voiceSample:"Hello, it is a lovely day today.",opened:"Opening the map…",calling:"Calling…",readDay:"Read aloud",plan:"A new day. Tap a button below when you need it.",home:"Take me home",call:"Call my family",tMed:"Did I take my medicine?",med:"I took my medicine",medNone:"Nothing recorded today.",medDone:"You already took it today at {t}. No need to take more.",medAsk:"Record again? (Only take more if your doctor says so)",tWalk:"Walk",dest:"Where am I going? e.g. the garden downstairs",go:"Start my walk",back:"I'm back",out:"Out to: {d}. Write in your journal when you return.",back2:"Welcome home! Tell me how the walk went.",reass:"Your past walks:",tJournal:"Today's journal",mic:"🎤 Tap and speak",stop:"⏹ Stop",save:"Save entry",ph:"Speak or type…",listen:"Listening… please speak",nomic:"Voice isn't supported here. Use Chrome or Safari, or type instead.",micErr:"Microphone is off. Please allow it, or type instead.",saved:"Saved.",tPast:"Past entries",empty:"No entries yet.",read:"Read aloud",del:"Delete",tSet:"⚙️ Settings",setHelp:"Ask a family member to fill this in.",addr:"Home address",phone:"Family phone number",privacy:"Everything stays on this device. Nothing is uploaded. The SafeSleep agent runs entirely on this device too.",needAddr:"Please add the home address in Settings first.",needPhone:"Please add a family phone number in Settings first.",ok:"OK",tAsk:"Ask my journal",askPh:"e.g. How was my last walk?",askGo:"Search",askMic:"🎤 Say a question",askNone:"Nothing found in your journal.",askMed:"You took your medicine today at {t}.",askNoMed:"No medicine recorded today.",maps:"Maps app",route:"Show me the way",needDest:"Please write where you are going first.",tWalkLog:"Walk log",min:"{n} min",noWalks:"No walks logged yet.",askWalk:"Walk: {d}, {day}",
+tabToday:"🏠 Today",tabFam:"👪 Family & Doctor",demoOn:"Demo data {s} (not saved)",demoExit:"Exit demo",
+tCheck:"🌅 Daily check-in",qSleep:"How did you sleep last night?",sl0:"😊 Well",sl1:"😐 OK",sl2:"😟 Badly",qWake:"How many times did you wake up at night?",wk0:"0",wk1:"1–2",wk2:"3 or more",qFall:"Did you fall, or almost fall, yesterday?",fl0:"No",fl1:"Yes",fallMsg:"Thank you for telling me. Please tell your family — you can tap “Call family”.",game:"🎯 Quick tap game (30 sec)",gameDone:"Tap game done today: {s} sec.",checkDone:"Today's check-in is done. Thank you!",checkLeft:"{n} left to do.",
+gTitle:"Tap the circle as soon as it turns green",gWait:"Wait…",gTap:"Tap!",gEarly:"Too early — wait for green.",gRound:"Round {i} of {n}",gResult:"Done! Your speed: {s} seconds. Thank you!",gClose:"Close",
+tReport:"🛡️ SafeSleep safety agent",reportSub:"Compares the last 7 days with this person's own usual pattern. For information only — not a diagnosis.",
+tier_review:"⚠️ Review suggested with a doctor or pharmacist",tier_ok:"✅ No alert",tier_abstain:"❔ Not enough information — no judgment",ts_review:"Review",ts_ok:"No alert",ts_abstain:"Abstain",
+sum_review:"Several changes have lasted at least 3 of the last 7 days{med}. That is enough to suggest a medication and safety review. It is not a diagnosis, and it does not mean a medicine caused it.",sum_med:", and a sleep/sedative medicine is on the list",sum_ok:"No lasting change from this person's usual pattern. The check runs again every day.",sum_abstain:"There is too little recent data to judge, so the agent is choosing not to guess.",sum_fall:"A fall or near-fall was reported, so safety comes first.",
+next_review:"Next step: bring this report to a doctor or pharmacist and talk through these changes and the full medication list. Do not stop or change any medicine on your own.",next_ok:"Next step: keep using the app each day. New changes will show up here.",next_abstain:"Next step: please do the morning check-in on at least 4 of the next 7 days.",
+whyTitle:"Why (evidence IDs in brackets):",conf:"Confidence: {c}",confH:"high",confM:"medium",confL:"low",prob:"Model score: {p}",watch:"Only one signal changed in a lasting way — watching, no alert yet.",outlier:"Ignored changes that lasted only a day or two: {c}.",contra:"Signals disagree: {c}. Confidence lowered.",contraAR:"less walking, but faster reaction time",
+disclaimer:"This tool does not diagnose any condition (such as dementia, delirium, or medication toxicity) and never advises stopping, reducing, or changing a medicine. An alert only means a review may be worthwhile — not that a medicine caused the change. All medication decisions belong to a doctor or pharmacist.",
+rs_act:"Walking is {pct}% below usual ({p}/7 days)",rs_night:"More night waking than usual ({p}/7 days)",rs_rt:"Tap game is {pct}% slower than usual ({p}/7 days)",rs_sleep:"Sleep rated worse than usual ({p}/7 days)",rs_fall:"Fall or near-fall reported on {d}",rs_dup:"Tried to log medicine twice on {n} days this week",rs_sed:"Currently taking: {m}",
+tSignals:"📈 Last 60 days",sigAct:"Walking",sigActU:"min/day",sigNight:"Night waking",sigNightU:"≈ times/night",sigRt:"Reaction time",sigRtU:"ms, lower is better",sigSleep:"Poor sleep",sigSleepU:"0 well – 2 badly",legBase:"┅ personal usual level",legRecent:"▮ last 7 days",legMed:"💊 medicine started",noData:"Not enough data yet.",
+tMeds:"💊 Medication list (family fills in)",medName:"Medicine name: brand, generic, or Chinese name",medStartL:"Start date",medAdd:"Add",medUnknown:"Not recognized — check spelling",medEmpty:"No medicines added yet.",medFrom:"since {d}",medMatch:"Recognized as: {i} ({c})",
+cls_zdrug:"Z-drug hypnotic",cls_benzo:"Benzodiazepine",cls_antihist:"1st-gen antihistamine",cls_sedAD:"Sedating antidepressant",cls_tca:"Tricyclic antidepressant",cls_antipsych:"Antipsychotic",cls_gaba:"Gabapentinoid",cls_mel:"Melatonin",cls_other:"Other",beers:"Beers 2023",sedFlag:"sedating",
+tLedger:"🧾 Evidence ledger & agent trace (for clinicians)",ledHead:"Every claim maps to one source:",lhId:"ID",lhSrc:"Source",lhClaim:"Evidence",traceHead:"Agent tool calls, in order:",
+led_med:"“{raw}” → {ing} ({cls}){flags}",led_medU:"“{raw}” → not recognized, not counted",led_act:"recent median {r} min/day vs usual {b} ({pct}%), {p}/7 days below usual",led_night:"recent {r} vs usual {b}, {p}/7 days above usual",led_rt:"recent {r} ms vs usual {b} ms ({pct}%), {p}/7 days slower",led_sleep:"recent {r} vs usual {b}, {p}/7 days worse",led_fall:"{d}: fall or near-fall (self-report)",led_dup:"tried to log medicine twice on {n} of the last 7 days",led_cov:"baseline {b} days; {r} of last 7 days have data; {c} signals usable",led_model:"transparent-weight model v0.3 (not clinically validated): score {p}",
+tr_validate:"baseline {b} days; recent {r}/7; usable signals {c}",tr_meds:"{n} medicines, {s} sedating",tr_analyze:"robust personal baseline (median/MAD); deviation and persistence over last 7 days",tr_risk:"score {p}",tr_critic:"decision: {d}",dec_pass:"pass — review alert",dec_ok:"pass — no alert",dec_revise:"downgraded to watch",dec_abstain:"abstain (insufficient evidence)",dec_safety:"safety override (fall reported)",tr_explain:"summary written only from verified evidence ({n} items)",
+tQs:"🩺 Questions to ask the doctor",q1:"These changes began around {d}. Could any medicine on the list, or a change in health, be related?",q2:"Given these changes, is the current sleep medicine still the right fit? Are there other options to discuss?",q3:"There was a fall or near-fall on {d}. Should we do a fall-risk check?",q4:"Night waking has increased. What home safety steps (night lights, grab bars) should we consider?",q5:"Could we review the full medication list together, including over-the-counter products?",
+print:"🖨️ Print report for the doctor visit",tDemo:"🧪 Demo & stress tests",demoHelp:"See how the agent decides in different situations using synthetic data. Synthetic data tests engineering behavior only — it is not clinical evidence.",
+scA:"A: several signals worsen after starting a sleep medicine",scB:"B: long-term medicine, only last night was bad",scC:"C: very little recent data (sensor gaps)",scD:"D: stable on medicine, everything normal",
+runTests:"▶️ Run all stress tests",testHead:"Scenario",testExp:"Expected",testRules:"Rules only",testNoCritic:"No evidence critic",testFull:"Full SafeSleep",normTest:"Medicine-name test (misspellings, brands, Chinese names): {k}/{n} correct",falseAlerts:"Wrong outputs: rules only {a}, no critic {b}, SafeSleep {c}.",
+tData:"💾 Data",exp:"Export data",impBtn:"Import data",impOk:"Imported.",impBad:"Could not read that file.",
+how:["Check data","Normalize meds","Personal baseline","Risk model","Evidence critic","Explain"],glance:"Last 7 days: {c} check-ins, {w} walks, {m} medicine logs.",
+demoNotes:["Walked in the park today. Lovely weather.","Called my daughter. It made me happy.","Did not sleep well. Woke up several times.","A little dizzy this morning, walked slowly."],demoDest:["the garden downstairs","the park","the grocery store"]},
+es:{loc:"es-ES",morn:"Es de mañana.",aft:"Es por la tarde.",eve:"Es de noche.",night:"Es muy tarde. Hora de descansar.",todayEntries:"Diario de hoy:",tTodo:"Cosas para hoy",todoNone:"Pide a un familiar que agregue tareas en Ajustes.",todoLeft:"Faltan {n} cosas:",todoDone:"Todo listo por hoy.",todoSet:"Tareas diarias (una por línea)",todoPh:"Ej.:\nBeber agua\nSalir a pasear\nLlamar a mi hija",noToday:"Aún no hay entrada hoy.",medAgain:"Toca otra vez para registrarla de nuevo. (Solo si su médico lo indica)",voice:"Voz de lectura (para este idioma)",voiceNone:"Este dispositivo no tiene voz en español.",region:{cn:"China continental",tw:"Taiwán",hk:"Hong Kong",sg:"Singapur",us:"EE. UU.",gb:"Reino Unido",au:"Australia",in:"India",es:"España",mx:"México",ar:"Argentina",co:"Colombia",cl:"Chile",pe:"Perú"},voiceTest:"🔊 Probar la voz",voiceSample:"Hola, hoy hace un día muy bonito.",opened:"Abriendo el mapa…",calling:"Llamando…",readDay:"Leer en voz alta",plan:"Un nuevo día. Toca un botón cuando lo necesites.",home:"Llévame a casa",call:"Llamar a mi familia",tMed:"¿Tomé mi medicina?",med:"Ya tomé mi medicina",medNone:"Nada registrado hoy.",medDone:"Ya la tomó hoy a las {t}. No necesita más.",medAsk:"¿Registrar otra vez? (Solo si su médico lo indica)",tWalk:"Paseo",dest:"¿A dónde voy? Ej.: el jardín de abajo",go:"Salir a pasear",back:"Ya volví",out:"Salí a: {d}. Escribe en tu diario al volver.",back2:"¡Bienvenida a casa! Cuéntame cómo fue el paseo.",reass:"Tus paseos anteriores:",tJournal:"Diario de hoy",mic:"🎤 Toca y habla",stop:"⏹ Parar",save:"Guardar",ph:"Habla o escribe…",listen:"Escuchando… habla",nomic:"La voz no funciona aquí. Usa Chrome o Safari, o escribe.",micErr:"El micrófono está apagado. Permítelo o escribe.",saved:"Guardado.",tPast:"Entradas anteriores",empty:"Aún no hay entradas.",read:"Leer",del:"Borrar",tSet:"⚙️ Ajustes",setHelp:"Pide a un familiar que lo complete.",addr:"Dirección de casa",phone:"Teléfono de la familia",privacy:"Todo queda en este dispositivo. No se sube nada. El agente SafeSleep también funciona solo en este dispositivo.",needAddr:"Primero agrega la dirección en Ajustes.",needPhone:"Primero agrega un teléfono en Ajustes.",ok:"OK",tAsk:"Pregunta a mi diario",askPh:"Ej.: ¿Cómo fue mi último paseo?",askGo:"Buscar",askMic:"🎤 Decir pregunta",askNone:"No se encontró nada en el diario.",askMed:"Hoy tomó su medicina a las {t}.",askNoMed:"No hay registro de medicina hoy.",maps:"App de mapas",route:"Muéstrame el camino",needDest:"Primero escribe a dónde vas.",tWalkLog:"Registro de paseos",min:"{n} min",noWalks:"Aún no hay paseos.",askWalk:"Paseo: {d}, {day}",
+tabToday:"🏠 Hoy",tabFam:"👪 Familia y médico",demoOn:"Datos de demostración {s} (no se guardan)",demoExit:"Salir",
+tCheck:"🌅 Revisión diaria",qSleep:"¿Cómo durmió anoche?",sl0:"😊 Bien",sl1:"😐 Regular",sl2:"😟 Mal",qWake:"¿Cuántas veces se despertó en la noche?",wk0:"0",wk1:"1–2",wk2:"3 o más",qFall:"¿Se cayó, o casi se cae, ayer?",fl0:"No",fl1:"Sí",fallMsg:"Gracias por decírmelo. Avise a su familia; puede tocar “Llamar a mi familia”.",game:"🎯 Juego rápido (30 seg)",gameDone:"Juego de hoy hecho: {s} seg.",checkDone:"La revisión de hoy está lista. ¡Gracias!",checkLeft:"Faltan {n}.",
+gTitle:"Toque el círculo en cuanto se ponga verde",gWait:"Espere…",gTap:"¡Toque!",gEarly:"Muy pronto: espere al verde.",gRound:"Ronda {i} de {n}",gResult:"¡Listo! Su velocidad: {s} segundos. ¡Gracias!",gClose:"Cerrar",
+tReport:"🛡️ Agente de seguridad SafeSleep",reportSub:"Compara los últimos 7 días con el patrón habitual de esta persona. Solo informativo, no es un diagnóstico.",
+tier_review:"⚠️ Se sugiere revisión con un médico o farmacéutico",tier_ok:"✅ Sin alerta",tier_abstain:"❔ Información insuficiente — sin juicio",ts_review:"Revisión",ts_ok:"Sin alerta",ts_abstain:"Abstiene",
+sum_review:"Varios cambios han durado al menos 3 de los últimos 7 días{med}. Eso basta para sugerir una revisión de medicamentos y seguridad. No es un diagnóstico y no significa que un medicamento lo haya causado.",sum_med:", y hay un medicamento para dormir/sedante en la lista",sum_ok:"No hay cambios duraderos frente al patrón habitual. La revisión se repite cada día.",sum_abstain:"Hay muy pocos datos recientes, así que el agente prefiere no adivinar.",sum_fall:"Se informó una caída o casi caída: la seguridad va primero.",
+next_review:"Siguiente paso: lleve este informe a un médico o farmacéutico y hablen de estos cambios y de la lista completa de medicamentos. No suspenda ni cambie ningún medicamento por su cuenta.",next_ok:"Siguiente paso: siga usando la app cada día. Los cambios nuevos aparecerán aquí.",next_abstain:"Siguiente paso: haga la revisión de la mañana al menos 4 de los próximos 7 días.",
+whyTitle:"Por qué (IDs de evidencia entre corchetes):",conf:"Confianza: {c}",confH:"alta",confM:"media",confL:"baja",prob:"Puntuación del modelo: {p}",watch:"Solo una señal cambió de forma duradera: en observación, sin alerta.",outlier:"Se ignoraron cambios de solo uno o dos días: {c}.",contra:"Señales contradictorias: {c}. Se bajó la confianza.",contraAR:"menos paseo, pero reacción más rápida",
+disclaimer:"Esta herramienta no diagnostica ninguna enfermedad (como demencia, delirio o toxicidad) y nunca aconseja suspender, reducir o cambiar un medicamento. Una alerta solo indica que una revisión podría valer la pena, no que un medicamento causó el cambio. Las decisiones sobre medicamentos corresponden a un médico o farmacéutico.",
+rs_act:"Pasea {pct}% menos de lo habitual ({p}/7 días)",rs_night:"Se despierta más de noche ({p}/7 días)",rs_rt:"El juego es {pct}% más lento ({p}/7 días)",rs_sleep:"Duerme peor de lo habitual ({p}/7 días)",rs_fall:"Caída o casi caída el {d}",rs_dup:"Intentó registrar la medicina dos veces en {n} días esta semana",rs_sed:"Toma actualmente: {m}",
+tSignals:"📈 Últimos 60 días",sigAct:"Paseo",sigActU:"min/día",sigNight:"Despertares",sigNightU:"≈ veces/noche",sigRt:"Tiempo de reacción",sigRtU:"ms, menos es mejor",sigSleep:"Mal sueño",sigSleepU:"0 bien – 2 mal",legBase:"┅ nivel habitual",legRecent:"▮ últimos 7 días",legMed:"💊 inicio de medicina",noData:"Aún no hay suficientes datos.",
+tMeds:"💊 Lista de medicamentos (la familia la llena)",medName:"Nombre: comercial, genérico o en chino",medStartL:"Fecha de inicio",medAdd:"Agregar",medUnknown:"No reconocido — revise la ortografía",medEmpty:"Aún no hay medicamentos.",medFrom:"desde {d}",medMatch:"Reconocido como: {i} ({c})",
+cls_zdrug:"Hipnótico Z",cls_benzo:"Benzodiacepina",cls_antihist:"Antihistamínico 1.ª gen.",cls_sedAD:"Antidepresivo sedante",cls_tca:"Antidepresivo tricíclico",cls_antipsych:"Antipsicótico",cls_gaba:"Gabapentinoide",cls_mel:"Melatonina",cls_other:"Otro",beers:"Beers 2023",sedFlag:"sedante",
+tLedger:"🧾 Registro de evidencia y pasos del agente (para clínicos)",ledHead:"Cada afirmación tiene una fuente:",lhId:"ID",lhSrc:"Fuente",lhClaim:"Evidencia",traceHead:"Herramientas que usó el agente, en orden:",
+led_med:"“{raw}” → {ing} ({cls}){flags}",led_medU:"“{raw}” → no reconocido, no se cuenta",led_act:"mediana reciente {r} min/día vs habitual {b} ({pct}%), {p}/7 días por debajo",led_night:"reciente {r} vs habitual {b}, {p}/7 días por encima",led_rt:"reciente {r} ms vs habitual {b} ms ({pct}%), {p}/7 días más lento",led_sleep:"reciente {r} vs habitual {b}, {p}/7 días peor",led_fall:"{d}: caída o casi caída (autoinforme)",led_dup:"intentó registrar la medicina dos veces en {n} de los últimos 7 días",led_cov:"base {b} días; {r} de los últimos 7 días con datos; {c} señales útiles",led_model:"modelo de pesos transparentes v0.3 (no validado clínicamente): puntuación {p}",
+tr_validate:"base {b} días; recientes {r}/7; señales útiles {c}",tr_meds:"{n} medicamentos, {s} sedantes",tr_analyze:"línea base personal robusta (mediana/MAD); desviación y persistencia en 7 días",tr_risk:"puntuación {p}",tr_critic:"decisión: {d}",dec_pass:"aprobado — alerta de revisión",dec_ok:"aprobado — sin alerta",dec_revise:"rebajado a observación",dec_abstain:"se abstiene (evidencia insuficiente)",dec_safety:"prioridad de seguridad (caída informada)",tr_explain:"resumen escrito solo con evidencia verificada ({n} elementos)",
+tQs:"🩺 Preguntas para el médico",q1:"Estos cambios empezaron alrededor del {d}. ¿Podría estar relacionado algún medicamento de la lista o un cambio de salud?",q2:"Con estos cambios, ¿sigue siendo adecuado el medicamento actual para dormir? ¿Hay otras opciones que hablar?",q3:"Hubo una caída o casi caída el {d}. ¿Conviene una evaluación del riesgo de caídas?",q4:"Se despierta más de noche. ¿Qué medidas de seguridad en casa (luces nocturnas, barras) conviene considerar?",q5:"¿Podemos revisar juntos la lista completa de medicamentos, incluidos los de venta libre?",
+print:"🖨️ Imprimir informe para la cita",tDemo:"🧪 Demostración y pruebas",demoHelp:"Vea cómo decide el agente en distintas situaciones con datos sintéticos. Los datos sintéticos solo prueban el comportamiento técnico; no son evidencia clínica.",
+scA:"A: varias señales empeoran tras empezar un medicamento para dormir",scB:"B: medicamento de largo plazo, solo anoche fue mala",scC:"C: muy pocos datos recientes (faltan sensores)",scD:"D: estable con medicamento, todo normal",
+runTests:"▶️ Ejecutar todas las pruebas",testHead:"Escenario",testExp:"Esperado",testRules:"Solo reglas",testNoCritic:"Sin crítico",testFull:"SafeSleep completo",normTest:"Prueba de nombres (errores, marcas, nombres en chino): {k}/{n} correctos",falseAlerts:"Resultados erróneos: solo reglas {a}, sin crítico {b}, SafeSleep {c}.",
+tData:"💾 Datos",exp:"Exportar datos",impBtn:"Importar datos",impOk:"Importado.",impBad:"No se pudo leer el archivo.",
+how:["Revisar datos","Normalizar medicinas","Línea base personal","Modelo de riesgo","Crítico de evidencia","Explicar"],glance:"Últimos 7 días: {c} revisiones, {w} paseos, {m} registros de medicina.",
+demoNotes:["Hoy paseé por el parque. Hacía buen tiempo.","Llamé a mi hija. Me puso contenta.","No dormí bien. Me desperté varias veces.","Un poco mareada esta mañana, caminé despacio."],demoDest:["el jardín de abajo","el parque","el supermercado"]}
+};
+var $=function(i){return document.getElementById(i)};
+var S={walks:[],maps:"",lang:"zh",entries:[],meds:[],addr:"",phone:"",walk:null,voices:{},todo:"",doneDay:"",done:[],
+ checkins:{},seen:{},night:{},nightLast:0,dup:{},medList:[]};
+var REAL=null,VIEW="today";
+function load(){try{var r=localStorage.getItem("memjournal");if(r)Object.assign(S,JSON.parse(r))}catch(e){}}
+function save(){if(S.demo)return;try{localStorage.setItem("memjournal",JSON.stringify(S))}catch(e){}} /* demo data is never saved */
+function t(k){return T[S.lang][k]}
+function fmt(s,o){return s.replace(/\{(\w+)\}/g,function(m,k){return o[k]!=null?o[k]:m})}
+function fmtTime(ts){return new Date(ts).toLocaleTimeString(t("loc"),{hour:"numeric",minute:"2-digit"})}
+function fmtDay(ts){return new Date(ts).toLocaleDateString(t("loc"),{month:"long",day:"numeric",weekday:"long"})}
+function fmtShort(ts){return new Date(ts).toLocaleDateString(t("loc"),{month:"short",day:"numeric"})}
+function same(a,b){return new Date(a).toDateString()===new Date(b).toDateString()}
+function pad(n){return n<10?"0"+n:""+n}
+function dk(ts){var d=new Date(ts);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())} /* local day key */
+function keyAgo(n){var d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-n);return dk(d)}
+function keyTs(k){var p=k.split("-");return new Date(+p[0],p[1]-1,+p[2],12).getTime()}
+function today(){return dk(Date.now())}
+/* Voices: list the ones that match the current language, prefer the natural-sounding ones */
+var GOOD=/natural|premium|enhanced|neural|online|google|siri|tingting|ting-ting|meijia|mei-jia|xiaoxiao|yunxi|huihui|samantha|monica|paulina/i;
+function voicesFor(){
+ var lang=t("loc").slice(0,2),vs=[];
+ try{vs=speechSynthesis.getVoices().filter(function(v){return v.lang.toLowerCase().replace("_","-").indexOf(lang)===0})}catch(e){}
+ /* In Chrome, prefer Google/Microsoft voices and hide the system (Apple) ones; on a phone only system voices exist, so keep them there */
+ var cloud=vs.filter(function(v){return /^(google|microsoft)/i.test(v.name)});
+ if(cloud.length)vs=cloud;
+ var exact=t("loc").toLowerCase();
+ function score(v){return (v.lang.toLowerCase().replace("_","-")===exact?2:0)+(GOOD.test(v.name)?1:0)}
+ vs.sort(function(a,b){return score(b)-score(a)});
+ return vs.slice(0,5)}
+function bestVoice(){
+ var vs=voicesFor();if(!vs.length)return null;
+ var want=S.voices[S.lang];
+ return vs.filter(function(v){return v.name===want})[0]||vs[0]}
+/* Friendly label: short name + region in the app's language */
+function voiceLabel(v){
+ var name=v.name.replace(/^(Microsoft|Google|Apple)\s*/i,"").replace(/\s*[-(（].*$/,"").trim();
+ var code=(v.lang||"").toLowerCase().replace("_","-").split("-")[1]||"";
+ var region=(t("region")||{})[code]||"";
+ return name+(region?"（"+region+"）":"")}
+var lastUtter=null; /* keep a reference: Chrome drops speech it thinks nobody is holding */
+function speak(s,retry){
+ try{
+  speechSynthesis.cancel();
+  var u=new SpeechSynthesisUtterance(s);u.lang=t("loc");u.rate=.9;
+  var v=retry?null:bestVoice();if(v)u.voice=v;
+  u.onerror=function(ev){
+   if(!retry&&ev.error!=="interrupted"&&ev.error!=="canceled"){speak(s,true);return} /* try again with the default voice */
+   $("topStatus").textContent="Speech error: "+(ev.error||"?")};
+  lastUtter=u;
+  setTimeout(function(){speechSynthesis.speak(u)},50);
+ }catch(e){$("topStatus").textContent="Speech error: "+e.message}}
+function fillVoices(){
+ var sel=$("voice");sel.innerHTML="";var vs=voicesFor(),b=bestVoice();
+ $("voiceLabel").textContent=t("voice");
+ if(!vs.length){var o=document.createElement("option");o.textContent=t("voiceNone");sel.appendChild(o);return}
+ vs.forEach(function(v){var o=document.createElement("option");o.value=v.name;o.textContent=voiceLabel(v);if(b&&v.name===b.name)o.selected=true;sel.appendChild(o)})}
+try{speechSynthesis.onvoiceschanged=fillVoices}catch(e){}
+function todoItems(){return S.todo.split("\n").map(function(x){return x.trim()}).filter(Boolean)}
+function todoToday(){var d=new Date().toDateString();if(S.doneDay!==d){S.doneDay=d;S.done=[]}return S.done} /* new day: everything unchecked again */
+function todoLeftText(){
+ var items=todoItems();if(!items.length)return "";
+ var done=todoToday(),left=items.filter(function(x){return done.indexOf(x)<0});
+ return left.length?t("todoLeft").replace("{n}",left.length)+left.join("，"):t("todoDone")}
+function timeOfDay(){var h=new Date().getHours();if(h<5)return t("night");if(h<12)return t("morn");if(h<18)return t("aft");return t("eve")}
+/* small on-screen message instead of a popup box */
+function msg(id,text){$(id).textContent=text;speak(text)}
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+
+/* Passive signals: any use of the app marks the day as "seen"; use between midnight and 5am counts as night activity */
+function touch(){
+ if(S.demo)return;
+ var k=today();S.seen[k]=1;
+ var h=new Date().getHours();
+ if(h<5&&Date.now()-S.nightLast>20*60000){S.night[k]=(S.night[k]||0)+1;S.nightLast=Date.now()}
+ save()}
+
+/* ================= SafeSleep agent: tools ================= */
+/* Tool 1 — Medication normalizer: brand / generic / Chinese name → ingredient + class */
+var CLS={zdrug:{sed:1,beers:1},benzo:{sed:1,beers:1},antihist:{sed:1,beers:1},tca:{sed:1,beers:1},antipsych:{sed:1,beers:1},sedAD:{sed:1,beers:0},gaba:{sed:1,beers:0},mel:{sed:0,beers:0},other:{sed:0,beers:0}};
+var MEDDB=[
+ ["zolpidem","zdrug","zolpidem,ambien,stilnox,stilnoct,edluar,intermezzo,zolpimist,唑吡坦,思诺思,诺宾"],
+ ["eszopiclone","zdrug","eszopiclone,lunesta,右佐匹克隆"],
+ ["zopiclone","zdrug","zopiclone,imovane,zimovane,佐匹克隆"],
+ ["zaleplon","zdrug","zaleplon,sonata,扎来普隆"],
+ ["lorazepam","benzo","lorazepam,ativan,劳拉西泮"],
+ ["alprazolam","benzo","alprazolam,xanax,阿普唑仑"],
+ ["clonazepam","benzo","clonazepam,klonopin,rivotril,氯硝西泮"],
+ ["diazepam","benzo","diazepam,valium,地西泮,安定"],
+ ["temazepam","benzo","temazepam,restoril,替马西泮"],
+ ["triazolam","benzo","triazolam,halcion,三唑仑"],
+ ["estazolam","benzo","estazolam,prosom,艾司唑仑,舒乐安定"],
+ ["diphenhydramine","antihist","diphenhydramine,benadryl,zzzquil,tylenol pm,advil pm,nytol,苯海拉明"],
+ ["doxylamine","antihist","doxylamine,unisom,多西拉敏"],
+ ["hydroxyzine","antihist","hydroxyzine,atarax,vistaril,羟嗪"],
+ ["amitriptyline","tca","amitriptyline,elavil,阿米替林"],
+ ["quetiapine","antipsych","quetiapine,seroquel,喹硫平,思瑞康"],
+ ["trazodone","sedAD","trazodone,desyrel,曲唑酮"],
+ ["mirtazapine","sedAD","mirtazapine,remeron,米氮平"],
+ ["gabapentin","gaba","gabapentin,neurontin,加巴喷丁"],
+ ["pregabalin","gaba","pregabalin,lyrica,普瑞巴林"],
+ ["melatonin","mel","melatonin,褪黑素"],
+ ["metformin","other","metformin,glucophage,二甲双胍"],
+ ["amlodipine","other","amlodipine,norvasc,氨氯地平,络活喜"],
+ ["atorvastatin","other","atorvastatin,lipitor,阿托伐他汀,立普妥"],
+ ["lisinopril","other","lisinopril,zestril,prinivil,赖诺普利"],
+ ["donepezil","other","donepezil,aricept,多奈哌齐,安理申"]
+].map(function(r){return {ing:r[0],cls:r[1],names:r[2].split(",")}});
+function lev(a,b){
+ var m=a.length,n=b.length,d=[],i,j;
+ for(i=0;i<=m;i++){d[i]=[i]}for(j=0;j<=n;j++)d[0][j]=j;
+ for(i=1;i<=m;i++)for(j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+ return d[m][n]}
+function normalizeMed(raw){
+ var s=(raw||"").toLowerCase().replace(/\d+(\.\d+)?\s*(mg|mcg|毫克|片|粒)?/g," ").replace(/\b(tablets?|tabs?|caps?|capsules?|tartrate|hcl|er|cr|xr)\b/g," ").replace(/[^a-z一-鿿 ]/g," ").replace(/\s+/g," ").trim();
+ if(!s)return null;
+ var best=null,bd=99;
+ MEDDB.forEach(function(m){m.names.forEach(function(nm){
+  if(s.indexOf(nm)>-1||(/[一-鿿]/.test(s)&&nm.indexOf(s)>-1&&s.length>=2)){if(bd>0||nm.length>best.hit.length){bd=0;best={ing:m.ing,cls:m.cls,hit:nm}}return}
+  if(/[一-鿿]/.test(nm))return;
+  s.split(" ").forEach(function(tok){
+   if(tok.length<4)return;
+   var d=lev(tok,nm),lim=nm.length<7?1:2;
+   if(d<=lim&&d<bd){bd=d;best={ing:m.ing,cls:m.cls,hit:nm}}})})});
+ return best}
+
+/* Tool 2 — Activity/sleep analyzer: deterministic daily features from the journal data (never estimated by a language model) */
+var N=60,R=7,CH=["act","night","rt","sleep"];
+var DIR={act:-1,night:1,rt:1,sleep:1},FLOOR={act:6,night:.8,rt:35,sleep:.5};
+function dailyFeatures(D){
+ var F={keys:[],act:[],night:[],rt:[],sleep:[],fall:[],dup:[],any:[]},walkMin={};
+ (D.walks||[]).forEach(function(w){var k=dk(w.start);walkMin[k]=(walkMin[k]||0)+Math.max(0,(w.end-w.start)/60000)});
+ for(var i=N-1;i>=0;i--){
+  var k=keyAgo(i),ci=(D.checkins||{})[k],seen=!!(D.seen||{})[k],nu=(D.night||{})[k]||0;
+  F.keys.push(k);
+  F.act.push(seen?Math.round(walkMin[k]||0):null);
+  F.night.push(ci&&ci.wake!=null?[0,1.5,3.5][ci.wake]+Math.min(2,nu):(nu?Math.min(2,nu):null));
+  F.rt.push(ci&&ci.rt?ci.rt:null);
+  F.sleep.push(ci&&ci.sleep!=null?ci.sleep:null);
+  F.fall.push(ci&&ci.fall?1:0);
+  F.dup.push((D.dup||{})[k]?1:0);
+  F.any.push(seen||!!ci?1:0)}
+ return F}
+function median(a){if(!a.length)return null;var b=a.slice().sort(function(x,y){return x-y}),m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2}
+function valid(a){return a.filter(function(x){return x!=null})}
+/* Personal baseline: median and MAD of up to 28 days before the last week; deviation and persistence over the last 7 days */
+function analyze(F,c){
+ var base=valid(F[c].slice(Math.max(0,N-R-28),N-R)),rec=F[c].slice(N-R),rv=valid(rec);
+ var o={nb:base.length,nr:rv.length,ok:base.length>=7&&rv.length>=3};
+ if(!base.length||!rv.length)return o;
+ var med=median(base),mad=1.4826*median(base.map(function(x){return Math.abs(x-med)})),sc=Math.max(mad,FLOOR[c]),rm=median(rv);
+ function z(x){return DIR[c]*(x-med)/sc}
+ o.med=med;o.scale=sc;o.rmed=rm;o.z=z(rm);
+ o.persist=rv.filter(function(x){return z(x)>1.5}).length;
+ o.pct=med?Math.round(Math.abs(rm-med)/med*100):0;
+ var last=null;for(var i=rec.length-1;i>=0;i--)if(rec[i]!=null){last=rec[i];break}
+ o.lastZ=z(last);
+ return o}
+/* Tool 3 — Risk model: transparent hybrid weights from the experiment plan (prototype, not clinically validated) */
+var W={b0:-3.2,sed:1.0,newSed:.35,act:.7,night:.6,rt:.8,sleep:.4,fall:1.5,dup:.6};
+function sigmoid(x){return 1/(1+Math.exp(-x))}
+function clampZ(z){return Math.max(0,Math.min(4,z||0))}
+function riskScore(Z,sed,newSed,fall,dup){
+ var l=W.b0+W.sed*(sed?1:0)+W.newSed*(newSed?1:0)+W.fall*(fall?1:0)+W.dup*Math.min(dup,3);
+ CH.forEach(function(c){l+=W[c]*clampZ(Z[c])});
+ return sigmoid(l)}
+
+/* ================= SafeSleep agent: orchestrator =================
+   mode "full" = all tools + evidence critic + abstention (B5)
+   mode "nocritic" = tools and model, but uses the latest day and never abstains (B4)
+   mode "rules" = alert whenever a sedative is on the list (B0) */
+function runAgent(D,mode){
+ mode=mode||"full";
+ var trace=[],L=[],notes=[];
+ function led(src,claim){var id="E"+(L.length+1);L.push({id:id,src:src,claim:claim});return id}
+ function step(tool,out){trace.push({tool:tool,out:out})}
+ var F=dailyFeatures(D);
+ /* 1. validate the case and see which evidence channels exist */
+ var baseDays=F.any.slice(Math.max(0,N-R-28),N-R).reduce(function(a,b){return a+b},0),recDays=F.any.slice(N-R).reduce(function(a,b){return a+b},0);
+ var A={};CH.forEach(function(c){A[c]=analyze(F,c)});
+ var usable=CH.filter(function(c){return A[c].ok});
+ step("validate_schema",fmt(t("tr_validate"),{b:baseDays,r:recDays,c:usable.length}));
+ var covId=led("validate_schema",fmt(t("led_cov"),{b:baseDays,r:recDays,c:usable.length}));
+ /* 2. normalize medications */
+ var now=today(),meds=(D.medList||[]).map(function(m){return {raw:m.name,start:m.start,n:normalizeMed(m.name)}});
+ var sed=[],newSed=false,medStart=null;
+ meds.forEach(function(m){
+  if(!m.n){m.id=led("normalize_medication",fmt(t("led_medU"),{raw:m.raw}));return}
+  var c=CLS[m.n.cls],flags=(c.sed?" · "+t("sedFlag"):"")+(c.beers?" · "+t("beers"):"");
+  m.id=led("normalize_medication",fmt(t("led_med"),{raw:m.raw,ing:m.n.ing,cls:t("cls_"+m.n.cls),flags:flags}));
+  if(c.sed&&(!m.start||m.start<=now)){sed.push(m);
+   if(m.start&&keyTs(now)-keyTs(m.start)<=35*864e5){newSed=true;if(!medStart||m.start>medStart)medStart=m.start}}});
+ step("normalize_medication",fmt(t("tr_meds"),{n:meds.length,s:sed.length}));
+ /* 3. compute features */
+ var ids={};
+ CH.forEach(function(c){var a=A[c];if(!a.ok)return;
+  var r=c==="act"||c==="rt"?Math.round(a.rmed):a.rmed.toFixed(1),b=c==="act"||c==="rt"?Math.round(a.med):a.med.toFixed(1);
+  ids[c]=led("analyze_"+c,fmt(t("led_"+c),{r:r,b:b,pct:(DIR[c]*(a.rmed-a.med)>=0?(c==="act"?"−":"+"):(c==="act"?"+":"−"))+a.pct,p:a.persist}))});
+ var fallIdx=[];F.fall.slice(N-R).forEach(function(f,i){if(f)fallIdx.push(N-R+i)});
+ fallIdx.forEach(function(i){ids.fall=led("check_in",fmt(t("led_fall"),{d:fmtShort(keyTs(F.keys[i]))}))});
+ var dupN=F.dup.slice(N-R).reduce(function(a,b){return a+b},0);
+ if(dupN)ids.dup=led("medicine_log",fmt(t("led_dup"),{n:dupN}));
+ step("analyze_activity_sleep",t("tr_analyze"));
+ /* 4. invoke the locked risk model */
+ var Z={};
+ CH.forEach(function(c){var a=A[c];if(mode==="nocritic"){Z[c]=a.nb>=3&&a.lastZ!=null?a.lastZ:0}else Z[c]=a.ok?a.z:0});
+ var p=riskScore(Z,sed.length,newSed,fallIdx.length,dupN);
+ var modelId=led("risk_model",fmt(t("led_model"),{p:p.toFixed(2)}));
+ step("risk_model",fmt(t("tr_risk"),{p:p.toFixed(2)}));
+ /* 5. evidence critic */
+ var supported=usable.filter(function(c){return A[c].z>=1.5&&A[c].persist>=3});
+ var outliers=usable.filter(function(c){return A[c].lastZ>=2&&A[c].persist<3});
+ var contra=A.act.ok&&A.rt.ok&&supported.indexOf("act")>-1&&A.rt.z<=-1;
+ var enough=baseDays>=7&&recDays>=4&&usable.length>=2;
+ var tier,dec;
+ if(mode==="rules"){tier=sed.length?"review":"ok";dec=tier==="review"?"dec_pass":"dec_ok"}
+ else if(mode==="nocritic"){tier=p>=.5?"review":"ok";dec=tier==="review"?"dec_pass":"dec_ok"}
+ else if(fallIdx.length){tier="review";dec="dec_safety"}
+ else if(!enough){tier="abstain";dec="dec_abstain"}
+ else if(p>=.5&&supported.length>=2){tier="review";dec="dec_pass"}
+ else{tier="ok";dec=p>=.5?"dec_revise":"dec_ok";if(p>=.5)notes.push(t("watch"))}
+ if(mode==="full"){
+  if(outliers.length)notes.push(fmt(t("outlier"),{c:outliers.map(function(c){return sigName(c)}).join(S.lang==="zh"?"、":", ")}));
+  if(contra)notes.push(fmt(t("contra"),{c:t("contraAR")}))}
+ var conf=!enough?"confL":(recDays>=6&&usable.length>=3&&!contra?"confH":"confM");
+ step("evidence_critic",fmt(t("tr_critic"),{d:t(dec)}));
+ /* 6. explanation limited to verified evidence */
+ var reasons=[];
+ supported.forEach(function(c){var a=A[c];reasons.push({text:fmt(t("rs_"+c),{pct:a.pct,p:a.persist}),ids:[ids[c]]})});
+ if(fallIdx.length)reasons.push({text:fmt(t("rs_fall"),{d:fmtShort(keyTs(F.keys[fallIdx[fallIdx.length-1]]))}),ids:[ids.fall]});
+ if(dupN>=2)reasons.push({text:fmt(t("rs_dup"),{n:dupN}),ids:[ids.dup]});
+ if(sed.length)reasons.push({text:fmt(t("rs_sed"),{m:sed.map(function(m){return m.raw}).join(", ")}),ids:sed.map(function(m){return m.id})});
+ step("explain",fmt(t("tr_explain"),{n:reasons.length}));
+ /* onset: first day in the last 3 weeks where a supported signal moved past its threshold */
+ var onset=null;
+ if(supported.length){for(var i=N-21;i<N&&!onset;i++)supported.forEach(function(c){var v=F[c][i],a=A[c];if(!onset&&v!=null&&DIR[c]*(v-a.med)/a.scale>1.5)onset=F.keys[i]})}
+ return {tier:tier,p:p,conf:conf,reasons:reasons,notes:notes,ledger:L,trace:trace,A:A,F:F,meds:meds,sed:sed,medStart:medStart,fall:fallIdx,supported:supported,onset:onset,
+  recDays:recDays,ids:{cov:covId,model:modelId}}}
+function sigName(c){return t({act:"sigAct",night:"sigNight",rt:"sigRt",sleep:"sigSleep"}[c])}
+
+/* ================= Synthetic cohort for the demo and stress tests ================= */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var x=Math.imul(seed^seed>>>15,1|seed);x=x+Math.imul(x^x>>>7,61|x)^x;return((x^x>>>14)>>>0)/4294967296}}
+function synth(scn){
+ var r=rng({A:11,B:22,C:33,D:44}[scn]);
+ function g(){return Math.sqrt(-2*Math.log(r()+1e-9))*Math.cos(2*Math.PI*r())}
+ var D={walks:[],maps:S.maps,lang:S.lang,entries:[],meds:[],addr:S.addr,phone:S.phone,walk:null,voices:S.voices,todo:S.todo,doneDay:"",done:[],checkins:{},seen:{},night:{},nightLast:0,dup:{},medList:[],demo:scn};
+ var medName={A:"Ambien 5 mg",B:"zolpidim 10mg",C:"思诺思",D:"Lunesta 2mg"}[scn];
+ D.medList.push({name:"Lipitor 20 mg",start:keyAgo(400)});
+ D.medList.push({name:medName,start:scn==="A"?keyAgo(21):keyAgo(300)});
+ var notes=t("demoNotes"),dests=t("demoDest");
+ for(var i=0;i<N;i++){
+  var ago=N-1-i,k=keyAgo(ago);
+  var present=scn==="C"&&ago<R?(ago===1||ago===4):r()<.95;
+  if(!present)continue;
+  D.seen[k]=1;
+  var f=scn==="A"?Math.max(0,Math.min(1,(i-45)/6)):0,bad=scn==="B"&&ago===0,sparse=scn==="C"&&ago<R;
+  var walk=Math.max(0,32+7*g()-18*f-(bad?26:0)-(sparse?18:0));
+  var day=keyTs(k);
+  if(walk>=3){var st=day-2.5*3600e3+r()*3*3600e3;D.walks.push({dest:dests[i%dests.length],start:st,end:st+walk*60000})}
+  D.meds.push(day-4*3600e3+r()*1800e3);
+  if(r()<.88||bad||sparse){
+   var wake=Math.max(0,Math.min(2,Math.round(.25+.4*g()*.6+1.8*f)));
+   D.checkins[k]={sleep:Math.max(0,Math.min(2,Math.round(.5+.5*g()*.6+1.2*f+(bad?2:0)))),wake:bad?2:wake,fall:scn==="A"&&ago===3?1:0,
+    rt:Math.round(430+32*g()+150*f+(bad?240:0)+(sparse?120:0))}}
+  if(scn==="A"&&f>.5&&r()<.45)D.night[k]=1;
+  if(scn==="A"&&ago<R&&r()<.45)D.dup[k]=1;
+  if(i%9===4)D.entries.unshift({ts:day+3600e3,text:notes[(i>>1)%notes.length],kind:"day"})}
+ D.walks.sort(function(a,b){return b.start-a.start});
+ if(scn==="A")D.entries.unshift({ts:keyTs(keyAgo(2))+3600e3,text:notes[3],kind:"day"});
+ return D}
+var EXPECT={A:"review",B:"ok",C:"abstain",D:"ok"};
+var NORMTESTS=[["Ambian 10mg","zolpidem"],["zolpidim","zolpidem"],["ZOLPIDEM TARTRATE 5 MG","zolpidem"],["Stilnox","zolpidem"],["思诺思","zolpidem"],["lorazapam","lorazepam"],["Tylenol PM","diphenhydramine"],["Benadril","diphenhydramine"],["Lunesta 2mg","eszopiclone"],["trazadone","trazodone"],["Seroquel 25","quetiapine"],["安定片","diazepam"],["舒乐安定","estazolam"],["melatonin 3mg","melatonin"],["Lipitor","atorvastatin"],["xanex","alprazolam"]];
+
+/* ================= Charts: one small multiple per signal ================= */
+var SVGNS="http://www.w3.org/2000/svg";
+function sv(tag,attrs,parent){var e=document.createElementNS(SVGNS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function chart(res,c){
+ var F=res.F,A=res.A[c],vals=F[c],box=el("div","chart");
+ var lab=el("div","lab");lab.appendChild(document.createTextNode(sigName(c)));lab.appendChild(el("span",null,t({act:"sigActU",night:"sigNightU",rt:"sigRtU",sleep:"sigSleepU"}[c])));box.appendChild(lab);
+ var vv=valid(vals);
+ if(vv.length<3){box.appendChild(el("p","small-t",t("noData")));return box}
+ var Wd=600,H=120,pl=44,pr=8,pt=8,pb=20,lo=Math.min.apply(null,vv),hi=Math.max.apply(null,vv);
+ if(A.med!=null){lo=Math.min(lo,A.med);hi=Math.max(hi,A.med)}
+ if(hi-lo<1e-6){hi+=1;lo-=1}var padv=(hi-lo)*.12;lo-=padv;hi+=padv;if(c!=="rt")lo=Math.max(0,lo);
+ function x(i){return pl+i*(Wd-pl-pr)/(N-1)}function y(v){return pt+(hi-v)/(hi-lo)*(H-pt-pb)}
+ var s=sv("svg",{viewBox:"0 0 "+Wd+" "+H,role:"img","aria-label":sigName(c)});
+ sv("rect",{x:x(N-R-.5),y:pt,width:x(N-1)-x(N-R-.5)+4,height:H-pt-pb,fill:"var(--recent)"},s);
+ [lo,hi].forEach(function(v){var tx=sv("text",{x:pl-6,y:y(v)+5,"text-anchor":"end","font-size":13,fill:"var(--soft)"},s);tx.textContent=c==="rt"||c==="act"?Math.round(v):v.toFixed(1)});
+ sv("line",{x1:pl,x2:Wd-pr,y1:H-pb,y2:H-pb,stroke:"var(--line)","stroke-width":1},s);
+ [0,N-1].forEach(function(i,j){var tx=sv("text",{x:x(i),y:H-4,"text-anchor":j?"end":"start","font-size":13,fill:"var(--soft)"},s);tx.textContent=fmtShort(keyTs(F.keys[i]))});
+ if(A.med!=null)sv("line",{x1:pl,x2:Wd-pr,y1:y(A.med),y2:y(A.med),stroke:"var(--soft)","stroke-width":1.5,"stroke-dasharray":"5 4"},s);
+ if(res.medStart){var mi=F.keys.indexOf(res.medStart);if(mi>-1){sv("line",{x1:x(mi),x2:x(mi),y1:pt,y2:H-pb,stroke:"var(--amber)","stroke-width":1.5},s);var mt=sv("text",{x:x(mi)+4,y:pt+14,"font-size":14},s);mt.textContent="💊"}}
+ var d="",pen=false;
+ vals.forEach(function(v,i){if(v==null){pen=false;return}d+=(pen?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1);pen=true});
+ sv("path",{d:d,fill:"none",stroke:"var(--jade)","stroke-width":2,"stroke-linejoin":"round","stroke-linecap":"round"},s);
+ vals.forEach(function(v,i){
+  if(v==null)return;
+  var adverse=i>=N-R&&A.scale&&DIR[c]*(v-A.med)/A.scale>1.5;
+  sv("circle",{cx:x(i),cy:y(v),r:adverse?4.5:3,fill:adverse?"var(--amber)":"var(--jade)",stroke:"var(--card)","stroke-width":1.5},s)});
+ /* hover / tap targets larger than the marks */
+ vals.forEach(function(v,i){var hit=sv("rect",{x:x(i)-5,y:pt,width:10,height:H-pt-pb,fill:"transparent"},s);var ti=sv("title",{},hit);ti.textContent=fmtShort(keyTs(F.keys[i]))+": "+(v==null?"—":(c==="rt"||c==="act"?Math.round(v):v.toFixed(1)))});
+ box.appendChild(s);return box}
+
+/* ================= Rendering ================= */
+function render(){
+ document.documentElement.lang=t("loc");
+ $("lang").value=S.lang;
+ $("readDay").textContent="🔊 "+t("readDay");
+ $("tabToday").textContent=t("tabToday");$("tabFam").textContent=t("tabFam");
+ $("tabToday").setAttribute("aria-selected",VIEW==="today");$("tabFam").setAttribute("aria-selected",VIEW==="fam");
+ $("viewToday").hidden=VIEW!=="today";$("viewFamily").hidden=VIEW!=="fam";
+ $("demoBar").hidden=!S.demo;if(S.demo){$("demoText").textContent="🧪 "+fmt(t("demoOn"),{s:S.demo});$("demoExit").textContent=t("demoExit")}
+ $("date").textContent=new Date().toLocaleDateString(t("loc"),{weekday:"long",month:"long",day:"numeric"});
+ $("plan").textContent=timeOfDay()+" "+t("plan");
+ $("home").textContent="🏠 "+t("home");
+ $("call").textContent="📞 "+t("call");
+ renderCheckin();
+ $("tMed").textContent=t("tMed");$("med").textContent="✅ "+t("med");
+ var tm=S.meds.filter(function(m){return same(m,Date.now())});
+ $("medStatus").textContent=tm.length?t("medDone").replace("{t}",fmtTime(tm[tm.length-1])):t("medNone");
+ $("tTodo").textContent="☑️ "+t("tTodo");
+ var TL=$("todoList");TL.innerHTML="";var items=todoItems(),done=todoToday();
+ if(!items.length){var tp=document.createElement("p");tp.className="sub";tp.textContent=t("todoNone");TL.appendChild(tp)}
+ items.forEach(function(x){
+  var b=document.createElement("button");var isDone=done.indexOf(x)>-1;b.className="todo"+(isDone?" done":"");
+  var box=document.createElement("span");box.className="box";box.textContent=isDone?"✅":"⬜";
+  var lab=document.createElement("span");lab.textContent=x;
+  b.appendChild(box);b.appendChild(lab);
+  b.onclick=function(){var i=S.done.indexOf(x);if(i>-1)S.done.splice(i,1);else S.done.push(x);save();render()};
+  TL.appendChild(b)});
+ $("todoStatus").textContent=todoLeftText();
+ $("todoSetLabel").textContent=t("todoSet");$("todoSet").placeholder=t("todoPh");$("todoSet").value=S.todo;
+ $("tWalk").textContent="🚶 "+t("tWalk");
+ $("dest").placeholder=t("dest");
+ $("goWalk").textContent=t("go");$("backWalk").textContent=t("back");
+ $("goWalk").hidden=!!S.walk;$("backWalk").hidden=!S.walk;
+ $("walkStatus").textContent=S.walk?t("out").replace("{d}",S.walk.dest):"";
+ var past=S.entries.filter(function(e){return e.kind==="walk"}).slice(0,3);
+ $("reassure").innerHTML="";
+ if(past.length&&!S.walk){var h=document.createElement("p");h.className="sub";h.textContent=t("reass");$("reassure").appendChild(h);
+  past.forEach(function(e){var p=document.createElement("p");p.textContent="“"+e.text+"” — "+fmtDay(e.ts);$("reassure").appendChild(p)})}
+ $("route").textContent="🧭 "+t("route");
+ $("tWalkLog").textContent="🗺️ "+t("tWalkLog");
+ var Wl=$("walkLog");Wl.innerHTML="";
+ if(!S.walks.length){var np=document.createElement("p");np.className="sub";np.textContent=t("noWalks");Wl.appendChild(np)}
+ S.walks.slice(0,10).forEach(function(w){
+  var p=document.createElement("p");var m=Math.max(1,Math.round((w.end-w.start)/60000));
+  p.textContent=w.dest+" — "+fmtDay(w.start)+" "+fmtTime(w.start)+", "+t("min").replace("{n}",m);Wl.appendChild(p)});
+ $("tJournal").textContent="📖 "+t("tJournal");
+ $("text").placeholder=t("ph");
+ $("mic").textContent=rec?t("stop"):t("mic");
+ $("save").textContent=t("save");
+ $("tAsk").textContent="❓ "+t("tAsk");$("q").placeholder=t("askPh");$("askGo").textContent=t("askGo");$("askMic").textContent=t("askMic");
+ $("maps").value=S.maps;fillVoices();$("voiceTest").textContent=t("voiceTest");
+ $("tPast").textContent=t("tPast");
+ $("tSet").textContent=t("tSet");$("setHelp").textContent=t("setHelp");
+ $("addr").placeholder=t("addr");$("phone").placeholder=t("phone");$("privacy").textContent=t("privacy");
+ $("addr").value=S.addr;$("phone").value=S.phone;
+ var L=$("list");L.innerHTML="";
+ if(!S.entries.length){var p=document.createElement("p");p.className="sub";p.textContent=t("empty");L.appendChild(p)}
+ S.entries.forEach(function(e,i){
+  var d=document.createElement("div");d.className="entry";
+  var w=document.createElement("div");w.className="when";w.textContent=fmtDay(e.ts)+" "+fmtTime(e.ts);
+  var x=document.createElement("div");x.textContent=e.text;
+  var b=document.createElement("button");b.className="small";b.textContent="🔊 "+t("read");b.onclick=function(){speak(e.text)};
+  var r=document.createElement("button");r.className="small";r.style.marginLeft="8px";r.textContent=t("del");r.onclick=function(){S.entries.splice(i,1);save();render()};
+  d.appendChild(w);d.appendChild(x);d.appendChild(b);d.appendChild(r);L.appendChild(d)});
+ if(VIEW==="fam")renderFamily();
+}
+
+function ci(){var k=today();return S.checkins[k]||(S.checkins[k]={})}
+function renderCheckin(){
+ var c=S.checkins[today()]||{};
+ $("tCheck").textContent=t("tCheck");$("qSleep").textContent=t("qSleep");$("qWake").textContent=t("qWake");$("qFall").textContent=t("qFall");
+ function opts(id,field,keys){
+  var box=$(id);box.innerHTML="";
+  keys.forEach(function(k,v){var b=el("button",null,t(k));b.setAttribute("aria-pressed",c[field]===v);
+   b.onclick=function(){ci()[field]=v;save();render();
+    if(field==="fall"&&v===1)msg("checkStatus",t("fallMsg"))};
+   box.appendChild(b)})}
+ opts("cSleep","sleep",["sl0","sl1","sl2"]);opts("cWake","wake",["wk0","wk1","wk2"]);opts("cFall","fall",["fl0","fl1"]);
+ $("gameBtn").textContent=t("game");
+ var left=["sleep","wake","fall","rt"].filter(function(f){return c[f]==null}).length;
+ if(c.fall!==1||$("checkStatus").textContent!==t("fallMsg"))
+  $("checkStatus").textContent=(c.rt?fmt(t("gameDone"),{s:(c.rt/1000).toFixed(2)})+" ":"")+(left?fmt(t("checkLeft"),{n:left}):t("checkDone"))}
+
+function tierBox(res){
+ var box=el("div","tier "+res.tier);
+ box.appendChild(el("b",null,t("tier_"+res.tier)));
+ var sum=res.tier==="review"?(res.fall.length&&res.supported.length<2?t("sum_fall"):fmt(t("sum_review"),{med:res.sed.length?t("sum_med"):""})):t("sum_"+res.tier);
+ box.appendChild(el("p",null,sum));
+ if(res.reasons.length&&res.tier!=="abstain"){
+  box.appendChild(el("p","small-t",t("whyTitle")));
+  var ul=el("ul","reasons");
+  res.reasons.forEach(function(r){var li=el("li",null,r.text);r.ids.forEach(function(id){li.appendChild(el("span","cite",id))});ul.appendChild(li)});
+  box.appendChild(ul)}
+ res.notes.forEach(function(n){box.appendChild(el("p","small-t",n))});
+ box.appendChild(el("p",null,t("next_"+res.tier)));
+ var meta=el("p","small-t",fmt(t("conf"),{c:t(res.conf)})+" · "+fmt(t("prob"),{p:res.p.toFixed(2)}));
+ meta.appendChild(el("span","cite",res.ids.cov));meta.appendChild(el("span","cite",res.ids.model));
+ box.appendChild(meta);
+ return box}
+
+function renderFamily(){
+ var res=runAgent(S,"full");
+ $("tReport").textContent=t("tReport");$("reportSub").textContent=t("reportSub");
+ var pipe=$("pipe");pipe.innerHTML="";t("how").forEach(function(s,i){if(i)pipe.appendChild(el("i",null,"→"));pipe.appendChild(el("span",null,s))});
+ $("tierBox").innerHTML="";$("tierBox").appendChild(tierBox(res));
+ var k7=res.F.keys.slice(N-R),ckN=k7.filter(function(k){return S.checkins[k]}).length;
+ $("glance").textContent=fmt(t("glance"),{c:ckN,w:S.walks.filter(function(w){return k7.indexOf(dk(w.start))>-1}).length,m:S.meds.filter(function(m){return k7.indexOf(dk(m))>-1}).length});
+ $("printBtn").textContent=t("print");
+ /* signals */
+ $("tSignals").textContent=t("tSignals");
+ var lg=$("legend");lg.innerHTML="";[t("legBase"),t("legRecent"),t("legMed")].forEach(function(s){lg.appendChild(el("span",null,s))});
+ var C=$("charts");C.innerHTML="";CH.forEach(function(c){C.appendChild(chart(res,c))});
+ /* doctor questions */
+ $("tQs").textContent=t("tQs");var qs=$("qs");qs.innerHTML="";
+ $("qsCard").hidden=res.tier!=="review";
+ if(res.tier==="review"){
+  if(res.onset||res.medStart)qs.appendChild(el("li",null,fmt(t("q1"),{d:fmtShort(keyTs(res.onset||res.medStart))})));
+  if(res.sed.length)qs.appendChild(el("li",null,t("q2")));
+  if(res.fall.length)qs.appendChild(el("li",null,fmt(t("q3"),{d:fmtShort(keyTs(res.F.keys[res.fall[res.fall.length-1]]))})));
+  if(res.supported.indexOf("night")>-1)qs.appendChild(el("li",null,t("q4")));
+  qs.appendChild(el("li",null,t("q5")))}
+ /* medications */
+ $("tMeds").textContent=t("tMeds");$("medName").placeholder=t("medName");$("medStartL").textContent=t("medStartL");$("medAdd").textContent=t("medAdd");
+ if(!$("medStart").value)$("medStart").value=today();
+ var ML=$("medList");ML.innerHTML="";
+ if(!S.medList.length)ML.appendChild(el("p","sub",t("medEmpty")));
+ res.meds.forEach(function(m,i){
+  var row=el("div","med"),left=el("div");
+  left.appendChild(el("div",null,m.raw));
+  var info=el("div","small-t");
+  if(m.n){info.appendChild(document.createTextNode(m.n.ing+" · "+t("cls_"+m.n.cls)+" "));
+   var c=CLS[m.n.cls];if(c.sed)info.appendChild(el("span","chip sed",t("sedFlag")));if(c.beers)info.appendChild(el("span","chip beers",t("beers")))}
+  else info.appendChild(el("span","chip beers",t("medUnknown")));
+  if(m.start)info.appendChild(el("span","chip",fmt(t("medFrom"),{d:fmtShort(keyTs(m.start))})));
+  left.appendChild(info);row.appendChild(left);
+  var del=el("button","small noprint",t("del"));del.onclick=function(){S.medList.splice(i,1);save();render()};row.appendChild(del);
+  ML.appendChild(row)});
+ /* ledger & trace */
+ $("tLedger").textContent=t("tLedger");$("ledHead").textContent=t("ledHead");$("traceHead").textContent=t("traceHead");
+ var tb=$("ledger");tb.innerHTML="";var hr=el("tr");[t("lhId"),t("lhSrc"),t("lhClaim")].forEach(function(h){hr.appendChild(el("th",null,h))});tb.appendChild(hr);
+ res.ledger.forEach(function(e){var tr=el("tr");tr.appendChild(el("td",null,e.id));tr.appendChild(el("td","mono",e.src));tr.appendChild(el("td",null,e.claim));tb.appendChild(tr)});
+ var tr=$("trace");tr.innerHTML="";res.trace.forEach(function(s){var li=el("li");li.appendChild(el("span","mono",s.tool+"()"));li.appendChild(document.createTextNode(" → "+s.out));tr.appendChild(li)});
+ /* demo */
+ $("tDemo").textContent=t("tDemo");$("demoHelp").textContent=t("demoHelp");$("runTests").textContent=t("runTests");
+ var sc=$("scenarios");sc.innerHTML="";
+ ["A","B","C","D"].forEach(function(k){var b=el("button",S.demo===k?"main":null,t("sc"+k));b.style.textAlign="left";b.onclick=function(){enterDemo(k)};sc.appendChild(b)});
+ $("tData").textContent=t("tData");$("exp").textContent=t("exp");$("impBtn").textContent=t("impBtn");
+ $("disc").textContent=t("disclaimer")}
+
+/* Stress tests: the same four cases through rules-only (B0), no-critic (B4) and full SafeSleep (B5) */
+function runTests(){
+ var out=$("testOut");out.innerHTML="";
+ var tb=el("table"),hr=el("tr");[t("testHead"),t("testExp"),t("testRules"),t("testNoCritic"),t("testFull")].forEach(function(h){hr.appendChild(el("th",null,h))});tb.appendChild(hr);
+ var wrong={rules:0,nocritic:0,full:0};
+ ["A","B","C","D"].forEach(function(k){
+  var D=synth(k),tr=el("tr");tr.appendChild(el("td",null,t("sc"+k)));tr.appendChild(el("td",null,t("ts_"+EXPECT[k])));
+  ["rules","nocritic","full"].forEach(function(m){var r=runAgent(D,m),okk=r.tier===EXPECT[k];if(!okk)wrong[m]++;
+   tr.appendChild(el("td",okk?"pass":"fail",(okk?"✓ ":"✗ ")+t("ts_"+r.tier)))});
+  tb.appendChild(tr)});
+ out.appendChild(tb);
+ out.appendChild(el("p","small-t",fmt(t("falseAlerts"),{a:wrong.rules,b:wrong.nocritic,c:wrong.full})));
+ var k=NORMTESTS.filter(function(x){var n=normalizeMed(x[0]);return n&&n.ing===x[1]}).length;
+ out.appendChild(el("p","small-t",fmt(t("normTest"),{k:k,n:NORMTESTS.length})))}
+
+function enterDemo(k){if(!S.demo)REAL=S;var keep=S.lang;S=synth(k);S.lang=keep;VIEW="fam";render();window.scrollTo(0,0)}
+function exitDemo(){if(REAL){REAL.lang=S.lang;S=REAL;REAL=null}render()}
+
+/* ================= Events ================= */
+document.addEventListener("click",touch,true);
+$("tabToday").onclick=function(){VIEW="today";render()};
+$("tabFam").onclick=function(){VIEW="fam";render()};
+$("demoExit").onclick=exitDemo;
+$("runTests").onclick=runTests;
+$("printBtn").onclick=function(){$("ledgerCard").open=true;window.print()};
+$("lang").onchange=function(){S.lang=this.value;if(REAL)REAL.lang=S.lang;save();render();if($("testOut").childNodes.length)runTests()};
+$("readDay").onclick=function(){
+ var td=S.entries.filter(function(e){return same(e.ts,Date.now())});
+ var parts=[$("date").textContent,timeOfDay()];var tl=todoLeftText();if(tl)parts.push(tl);
+ if(td.length){parts.push(t("todayEntries"));td.forEach(function(e){parts.push(e.text)})}else parts.push(t("noToday"));
+ speak(parts.join("。 "))};
+$("voice").onchange=function(){S.voices[S.lang]=this.value;save()};
+$("voiceTest").onclick=function(){speak(t("voiceSample"))};
+function defaultMaps(){return /iPhone|iPad|Mac/.test(navigator.userAgent)?"apple":"google"}
+function openMaps(place){
+ var q=encodeURIComponent(place);
+ var url=S.maps==="apple"?"https://maps.apple.com/?dirflg=w&daddr="+q:"https://www.google.com/maps/dir/?api=1&destination="+q+"&travelmode=walking";
+ var a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove()}
+$("home").onclick=function(){if(!S.addr){msg("topStatus",t("needAddr"));return}msg("topStatus",t("opened"));openMaps(S.addr)};
+$("route").onclick=function(){var d=$("dest").value.trim();if(!d){msg("walkStatus",t("needDest"));return}msg("walkStatus",t("opened"));openMaps(d)};
+$("maps").onchange=function(){S.maps=this.value;save()};
+$("call").onclick=function(){if(!S.phone){msg("topStatus",t("needPhone"));return}msg("topStatus",t("calling"));var a=document.createElement("a");a.href="tel:"+S.phone.replace(/[^0-9+]/g,"");document.body.appendChild(a);a.click();a.remove()};
+var medArmed=false;
+$("med").onclick=function(){
+ var tm=S.meds.filter(function(m){return same(m,Date.now())});
+ if(tm.length&&!medArmed){medArmed=true;S.dup[today()]=1;save(); /* a repeat-dose attempt is itself a memory/safety signal */
+  msg("medStatus",t("medDone").replace("{t}",fmtTime(tm[tm.length-1]))+" "+t("medAgain"));setTimeout(function(){medArmed=false;render()},15000);return}
+ medArmed=false;S.meds.push(Date.now());S.meds=S.meds.slice(-120);save();render()};
+$("goWalk").onclick=function(){S.walk={dest:$("dest").value||"…",ts:Date.now()};save();render()};
+$("backWalk").onclick=function(){
+ var w=S.walk;
+ S.walks.unshift({dest:w.dest,start:w.ts,end:Date.now()});S.walks=S.walks.slice(0,200);
+ S.walk=null;S.pendingWalk=true;save();render();
+ $("micStatus").textContent=t("back2");$("text").focus()};
+$("addr").onchange=function(){S.addr=this.value;save()};
+$("phone").onchange=function(){S.phone=this.value;save()};
+$("todoSet").onchange=function(){S.todo=this.value;save();render()};
+$("save").onclick=function(){
+ var v=$("text").value.trim();if(!v)return;
+ S.entries.unshift({ts:Date.now(),text:v,kind:S.pendingWalk?"walk":"day"});S.pendingWalk=false;
+ $("text").value="";save();render();$("micStatus").textContent=t("saved")};
+$("medName").oninput=function(){var n=normalizeMed(this.value);$("medPreview").textContent=!this.value.trim()?"":n?fmt(t("medMatch"),{i:n.ing,c:t("cls_"+n.cls)}):t("medUnknown")};
+$("medAdd").onclick=function(){var v=$("medName").value.trim();if(!v)return;S.medList.push({name:v,start:$("medStart").value||today()});$("medName").value="";$("medPreview").textContent="";save();render()};
+$("exp").onclick=function(){
+ var data=JSON.stringify(REAL||S,null,1),a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));a.download="safesleep-"+today()+".json";document.body.appendChild(a);a.click();a.remove()};
+$("impBtn").onclick=function(){$("imp").click()};
+$("imp").onchange=function(){var f=this.files[0];if(!f)return;var fr=new FileReader();
+ fr.onload=function(){try{var d=JSON.parse(fr.result);if(REAL){S=REAL;REAL=null}Object.assign(S,d);delete S.demo;save();render();$("dataStatus").textContent=t("impOk")}catch(e){$("dataStatus").textContent=t("impBad")}};fr.readAsText(f)};
+
+var rec=null;var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$("mic").onclick=function(){
+ if(!SR){$("micStatus").textContent=t("nomic");return}
+ if(rec){rec.stop();return}
+ rec=new SR();rec.lang=t("loc");rec.interimResults=true;rec.continuous=true;
+ var base=$("text").value;
+ rec.onresult=function(ev){var s="";for(var i=0;i<ev.results.length;i++)s+=ev.results[i][0].transcript;$("text").value=(base?base+" ":"")+s};
+ rec.onerror=function(ev){$("micStatus").textContent=t("micErr")+" ("+(ev&&ev.error||"?")+")"};
+ rec.onend=function(){rec=null;$("mic").textContent=t("mic");if($("micStatus").textContent===t("listen"))$("micStatus").textContent=""};
+ try{rec.start();$("micStatus").textContent=t("listen");$("mic").textContent=t("stop")}catch(e){rec=null;$("micStatus").textContent=t("micErr")}};
+
+/* Reaction-time check-in: 5 rounds, false starts are repeated, the median is stored */
+var G=null;
+function gRound(){
+ G.state="wait";$("dot").className="";$("dot").textContent=t("gWait");$("gRound").textContent=fmt(t("gRound"),{i:G.times.length+1,n:G.n});
+ G.timer=setTimeout(function(){G.state="go";G.t0=performance.now();$("dot").className="go";$("dot").textContent=t("gTap");$("gStatus").textContent=""},1500+Math.random()*2500)}
+$("gameBtn").onclick=function(){G={n:5,times:[]};$("gTitle").textContent=t("gTitle");$("gClose").textContent=t("gClose");$("gStatus").textContent="";$("game").hidden=false;speak(t("gTitle"));gRound()};
+$("dot").onpointerdown=function(e){
+ e.preventDefault();if(!G)return;
+ if(G.state==="wait"){clearTimeout(G.timer);G.state="pause";$("gStatus").textContent=t("gEarly");setTimeout(gRound,1300);return}
+ if(G.state!=="go")return;
+ G.times.push(performance.now()-G.t0);G.state="pause";$("dot").className="";$("dot").textContent="✓";
+ if(G.times.length<G.n){setTimeout(gRound,700);return}
+ var ms=Math.round(median(G.times));ci().rt=ms;save();
+ G.state="done";$("dot").textContent="🎉";msg("gStatus",fmt(t("gResult"),{s:(ms/1000).toFixed(2)}))};
+$("gClose").onclick=function(){if(G)clearTimeout(G.timer);G=null;$("game").hidden=true;render()};
+
+/* Ask my journal: find saved entries that share words with the question */
+function tokens(str){
+ str=str.toLowerCase();
+ var words=str.match(/[a-z0-9áéíóúñü]{3,}/g)||[];
+ var cjk=str.replace(/[^一-鿿]/g,"");
+ for(var i=0;i<cjk.length-1;i++)words.push(cjk.substr(i,2));
+ return words}
+function search(q){
+ var qt=tokens(q),out=[];
+ S.entries.forEach(function(e){
+  var txt=e.text.toLowerCase(),score=0;
+  qt.forEach(function(w){if(txt.indexOf(w)>-1)score++});
+  if(score>0)out.push({e:e,score:score})});
+ out.sort(function(a,b){return b.score-a.score||b.e.ts-a.e.ts});
+ return out.slice(0,3)}
+function doAsk(){
+ var q=$("q").value.trim(),box=$("askOut");box.innerHTML="";if(!q)return;
+ var lines=[];
+ if(/药|medic|pill|pastill/i.test(q)){
+  var m=S.meds.filter(function(x){return same(x,Date.now())});
+  lines.push(m.length?t("askMed").replace("{t}",fmtTime(m[m.length-1])):t("askNoMed"))}
+ var qt=tokens(q);
+ S.walks.forEach(function(w,i){
+  var hit=/散步|walk|paseo|pase/i.test(q)?i<3:qt.some(function(x){return w.dest.toLowerCase().indexOf(x)>-1});
+  if(hit)lines.push(t("askWalk").replace("{d}",w.dest).replace("{day}",fmtDay(w.start)+" "+fmtTime(w.start)))});
+ search(q).forEach(function(r){lines.push(fmtDay(r.e.ts)+": "+r.e.text)});
+ if(!lines.length)lines.push(t("askNone"));
+ lines.forEach(function(l){var p=document.createElement("p");p.textContent=l;box.appendChild(p)});
+ speak(lines[0])}
+$("askGo").onclick=doAsk;
+$("q").onkeydown=function(e){if(e.key==="Enter")doAsk()};
+$("askMic").onclick=function(){
+ if(!SR){$("askOut").textContent=t("nomic");return}
+ var r=new SR();r.lang=t("loc");
+ r.onresult=function(ev){$("q").value=ev.results[0][0].transcript;doAsk()};
+ r.onerror=function(ev){$("askOut").textContent=t("micErr")+" ("+(ev&&ev.error||"?")+")"};
+ try{r.start()}catch(e){}};
+
+load();
+["checkins","seen","night","dup"].forEach(function(k){if(!S[k]||typeof S[k]!=="object")S[k]={}});if(!S.medList)S.medList=[];
+if(!S.maps)S.maps=defaultMaps();touch();render();
+</script>
+</body>
+</html>

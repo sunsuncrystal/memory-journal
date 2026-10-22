@@ -391,6 +391,8 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
   <h2 data-t="medTimeL"></h2>
   <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px"><input id="medTime1" type="time" style="min-width:0"><input id="medTime2" type="time" aria-label="2" style="min-width:0"></div>
   <p class="small-t" data-t="medTime2L" style="margin:6px 0 0"></p>
+  <button class="small" id="calBtn" style="margin-top:12px"></button>
+  <p class="small-t" id="calHelp" style="margin:6px 0 0"></p>
  </div>
  <div class="card"><h2 data-t="slotsT"></h2><div id="slotList"></div></div>
  <div class="card">
@@ -1278,6 +1280,49 @@ $("statsCsv").onclick=function(){
  Object.keys(u).sort().forEach(function(d){rows.push([d].concat(USE_KEYS.map(function(k){return u[d][k]||0})).join(","))});
  var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.join("\n")+"\n"],{type:"text/csv"}));a.download="memjournal-usage-"+today()+".csv";document.body.appendChild(a);a.click();a.remove()};
 
+/* ================= Calendar reminders =================
+   A web app can't ring when it is closed, but the phone's own calendar can.
+   We hand it a daily repeating event (.ics) at each medicine time; nothing leaves the phone. */
+var T7={
+zh:{calBtn:"📅 加到手机日历（App 关着也会响）",calHelp:"到吃药时间，手机自带的日历会响铃提醒，就算没打开记忆日记也会响。iPhone 上点了以后选“全部添加”。以后改了吃药时间，要再点一次，并在日历里删掉旧的提醒。",calNeed:"请先在上面设好吃药时间。",calTitle:"💊 该吃药了",calDesc:"吃完药，打开“记忆日记”，按“我已经吃药了”。",
+ expOk:"已导出，包括 {n} 段录音。",impOkV:"已导入，包括 {n} 段录音。"},
+en:{calBtn:"📅 Add to phone calendar (rings even when the app is closed)",calHelp:"At each medicine time the phone's own calendar rings, even if Memory Journal isn't open. On iPhone, choose “Add All”. If you change the times later, tap this again and delete the old reminders in Calendar.",calNeed:"Set a medicine time above first.",calTitle:"💊 Time for medicine",calDesc:"After taking it, open Memory Journal and tap “I took my medicine”.",
+ expOk:"Exported, including {n} recordings.",impOkV:"Imported, including {n} recordings."},
+es:{calBtn:"📅 Añadir al calendario (suena aunque la app esté cerrada)",calHelp:"A la hora de la medicina, el calendario del teléfono sonará aunque Diario de recuerdos no esté abierto. En iPhone, elija “Añadir todo”. Si cambia las horas, toque de nuevo y borre los avisos viejos en el calendario.",calNeed:"Primero ponga una hora de medicina arriba.",calTitle:"💊 Hora de la medicina",calDesc:"Después de tomarla, abra Diario de recuerdos y toque “Ya tomé mi medicina”.",
+ expOk:"Exportado, con {n} grabaciones.",impOkV:"Importado, con {n} grabaciones."}};
+for(var _c in T7)Object.assign(T[_c],T7[_c]);
+function icsText(s){return String(s).replace(/\\/g,"\\\\").replace(/([,;])/g,"\\$1").replace(/\n/g,"\\n")}
+function buildICS(times,now){
+ var d=new Date(now||Date.now()),day=d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate());
+ var stamp=new Date(now||Date.now()).toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+ var url=location.protocol.indexOf("http")===0?location.origin+location.pathname:"";
+ var L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Memory Journal//SafeSleep//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+ times.forEach(function(tm){var hm=tm.replace(":","");
+  L.push("BEGIN:VEVENT","UID:memjournal-med-"+hm+"@memory-journal","DTSTAMP:"+stamp,"DTSTART:"+day+"T"+hm+"00","DURATION:PT10M","RRULE:FREQ=DAILY",
+   "SUMMARY:"+icsText(t("calTitle")),"DESCRIPTION:"+icsText(t("calDesc")));
+  if(url)L.push("URL:"+url);
+  L.push("BEGIN:VALARM","ACTION:DISPLAY","DESCRIPTION:"+icsText(t("calTitle")),"TRIGGER:PT0M","END:VALARM","END:VEVENT")});
+ L.push("END:VCALENDAR");return L.join("\r\n")+"\r\n"}
+function saveFile(blob,name){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove()}
+$("calBtn").onclick=function(){
+ var times=[S.medTime,S.medTime2].filter(Boolean);
+ if(!times.length){vstatus(t("calNeed"));return}
+ buzz();var ics=buildICS(times);
+ /* iPhone Safari offers "Add to Calendar" when it opens calendar data directly; elsewhere a downloaded .ics opens in the calendar app */
+ if(/iPhone|iPad|iPod/.test(navigator.userAgent))location.href="data:text/calendar;charset=utf-8,"+encodeURIComponent(ics);
+ else saveFile(new Blob([ics],{type:"text/calendar"}),"medicine-reminder.ics")};
+
+/* Backups carry the family recordings too (as data URLs), so a new phone gets the voices back */
+function clipKeys(D){return Object.keys(D.voiceMeta||{}).map(function(k){return "slot:"+k}).concat((D.messages||[]).map(function(m){return m.id}))}
+function exportAll(){
+ var D=REAL||S,clips={},n=0;
+ return Promise.all(clipKeys(D).map(function(k){return vget(k).then(function(b){if(!b)return;
+  return new Promise(function(res){var fr=new FileReader();fr.onload=function(){clips[k]=fr.result;n++;res()};fr.onerror=function(){res()};fr.readAsDataURL(b)})}).catch(function(){})}))
+ .then(function(){var out=Object.assign({},D,{_clips:clips});delete out.demo;return {json:JSON.stringify(out),n:n}})}
+function importClips(clips){
+ var ks=Object.keys(clips||{});
+ return Promise.all(ks.map(function(k){return fetch(clips[k]).then(function(r){return r.blob()}).then(function(b){return vput(k,b)}).catch(function(){})})).then(function(){return ks.length})}
+
 var SLOTS=["med","medDone","check","walk","home","hello","night"];
 
 /* Audio clips live in IndexedDB (too big for localStorage); S.voiceMeta / S.messages hold only the labels */
@@ -1394,6 +1439,7 @@ function delClip(target){
   save();render()})}
 function renderVoiceSet(){
  $("voiceName").placeholder=t("voiceNamePh");$("voiceName").value=S.voiceName||"";
+ $("calBtn").textContent=t("calBtn");$("calHelp").textContent=t("calHelp");
  $("medTime1").value=S.medTime||"";$("medTime2").value=S.medTime2||"";
  var meta=S.voiceMeta||{},SL=$("slotList");SL.innerHTML="";
  function buttons(box,target,has,playKeyName){
@@ -1489,11 +1535,11 @@ $("save").onclick=function(){
 $("medName").oninput=function(){var n=normalizeMed(this.value);$("medPreview").textContent=!this.value.trim()?"":n?fmt(t("medMatch"),{i:n.ing,c:t("cls_"+n.cls)}):t("medUnknown")};
 $("medAdd").onclick=function(){var v=$("medName").value.trim();if(!v)return;S.medList.push({name:v,start:$("medStart").value||today()});$("medName").value="";$("medPreview").textContent="";save();render()};
 $("exp").onclick=function(){
- var data=JSON.stringify(REAL||S,null,1),a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));a.download="safesleep-"+today()+".json";document.body.appendChild(a);a.click();a.remove()};
+ exportAll().then(function(r){saveFile(new Blob([r.json],{type:"application/json"}),"safesleep-"+today()+".json");$("dataStatus").textContent=fmt(t("expOk"),{n:r.n})})};
 $("impBtn").onclick=function(){$("imp").click()};
 $("imp").onchange=function(){var f=this.files[0];if(!f)return;var fr=new FileReader();
- fr.onload=function(){try{var d=JSON.parse(fr.result);if(REAL){S=REAL;REAL=null}Object.assign(S,d);delete S.demo;save();render();$("dataStatus").textContent=t("impOk")}catch(e){$("dataStatus").textContent=t("impBad")}};fr.readAsText(f)};
+ fr.onload=function(){try{var d=JSON.parse(fr.result),clips=d._clips;delete d._clips;if(REAL){S=REAL;REAL=null}Object.assign(S,d);delete S.demo;save();
+  importClips(clips).then(function(n){render();$("dataStatus").textContent=n?fmt(t("impOkV"),{n:n}):t("impOk")})}catch(e){$("dataStatus").textContent=t("impBad")}};fr.readAsText(f)};
 
 var rec=null;var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 $("mic").onclick=function(){
