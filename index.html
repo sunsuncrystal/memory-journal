@@ -928,7 +928,7 @@ for(var _f in T4)Object.assign(T[_f],T4[_f]);
 
 /* ================= Screens & navigation ================= */
 var SCREEN="home",SCREENS=["home","med","check","walk","journal","todo","ask","voices","family","famReport","famMeds","famVoice","famInfo","famDisplay","famData","famDemo","night","famStats"];
-var TITLE={med:"tMed",check:"tCheck",walk:"tWalkT",journal:"tJournal",todo:"tTodo",ask:"tAsk",voices:"tVoices",family:"tabFam"};
+var TITLE={med:"tMed",check:"tCheck",walk:"sayWalk",journal:"sayJournal",todo:"sayTodo",ask:"sayAsk",voices:"sayVoices",family:"tabFam"}; /* what is said on opening a screen: a short friendly sentence, not just the title */
 function buzz(){try{navigator.vibrate&&navigator.vibrate(15)}catch(e){}}
 function show(name,push){
  SCREEN=name;
@@ -1390,6 +1390,12 @@ function checkTaskReminder(){
    on the family computer, and ship with the app as small audio files. speak() plays one of those when the
    sentence matches; anything else (names, times, journal text) still uses the phone's own voice. */
 /* Spoken medicine lines stay fixed (no clock time in them) so they can be in Mimi's voice; the screen shows the time */
+/* Opening a screen says a whole sentence: warmer, and very short clips (2–4 characters) come out of the voice model with stray sounds */
+var T11={
+zh:{sayWalk:"我们去散步吧。",sayJournal:"来写今天的日记吧。",sayAsk:"想问问以前的日记吗？",sayTodo:"来看看今天要做的事。",sayVoices:"听听家人的声音吧。",taskPraise:"真棒！又做完一件。",saved:"好的，日记保存好了。"},
+en:{sayWalk:"Let's go for a walk.",sayJournal:"Let's write today's journal.",sayAsk:"Want to look back in your journal?",sayTodo:"Let's look at today's list.",sayVoices:"Let's listen to your family.",taskPraise:"Well done! One more done.",saved:"Your journal is saved."},
+es:{sayWalk:"Vamos a pasear.",sayJournal:"Escribamos el diario de hoy.",sayAsk:"¿Quiere buscar en su diario?",sayTodo:"Veamos las tareas de hoy.",sayVoices:"Escuchemos a la familia.",taskPraise:"¡Muy bien! Una más lista.",saved:"Listo, su diario está guardado."}};
+for(var _s in T11)Object.assign(T[_s],T11[_s]);
 var T10={
 zh:{medSayTaken:"好的，记下了。今天的药吃过了，不用再吃。",medSayAgain:"今天已经吃过药了。只有医生说可以，才再按一次。",medSayDone:"今天的药已经吃过了，不用再吃。"},
 en:{medSayTaken:"Got it. Today's medicine is taken. No need to take more.",medSayAgain:"You already took your medicine today. Only tap again if your doctor said so.",medSayDone:"Today's medicine is already taken. No need to take more."},
@@ -1403,7 +1409,7 @@ for(var _v in T9)Object.assign(T[_v],T9[_v]);
 function voiceKey(s){return speechText(s).replace(/[\s，。！？、：；,.!?:;…]/g,"")}
 /* every fixed sentence the app can say; dev/voices.py renders these (count templates are rendered for 1–10) */
 function voicePhrases(){
- var keys=["tCheck","tWalkT","tJournal","tTodo","tAsk","tVoices","qSleep","qWake","qFall","fallMsg","gameAsk","allDone","medTimeTTS","back2","gTitle",
+ var keys=["sayWalk","sayJournal","sayTodo","sayAsk","sayVoices","qSleep","qWake","qFall","fallMsg","gameAsk","allDone","medTimeTTS","back2","gTitle",
   "nSay","nUpSay","nNight","petDone","petNone","nudgeCheck","taskPraise","needDest","needAddr","opened","needPhone","calling","saved","askNone","askNoMed","voiceSample","todoDone","medSayTaken","medSayAgain"];
  var out=keys.map(function(k){return t(k)}).concat(t("petHi"),[t("tMed")+" "+t("medNone"),t("tMed")+" "+t("medSayDone")]);
  ["nudgeTodo","petTodo"].forEach(function(k){for(var n=1;n<=10;n++)out.push(fmt(t(k),{n:n}))});

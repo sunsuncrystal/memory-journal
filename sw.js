@@ -1,5 +1,5 @@
 /* Offline support: serve the app from cache, refresh the cache in the background when online */
-var CACHE="memjournal-v16";
+var CACHE="memjournal-v17";
 var FILES=["./","index.html","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png","icons/apple-touch-icon.png"];
 /* Mimi's voice clips are cached too, so reminders sound the same offline; a missing voice folder is fine */
 function cacheVoice(c,lang){return fetch("voice/"+lang+"/index.json").then(function(r){return r.ok?r.json():{}}).then(function(m){

@@ -110,5 +110,8 @@ for i, p in enumerate(todo, 1):
 # keep the index in step with the phrase list
 keep = {p['key'] for p in phrases}
 index = {k: v for k, v in index.items() if k in keep and os.path.exists(os.path.join(out, v))}
+for f in os.listdir(out):  # clips for sentences the app no longer says
+    if f.endswith('.m4a') and f not in index.values():
+        os.remove(os.path.join(out, f))
 json.dump(index, open(idx_path, 'w'), ensure_ascii=False, indent=0)
 print('done: %d clips' % len(index))
