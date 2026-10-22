@@ -68,7 +68,7 @@ function applyStatic(){
  Array.prototype.forEach.call(document.querySelectorAll("[data-t]"),function(e){e.textContent=t(e.getAttribute("data-t"))});
  Array.prototype.forEach.call(document.querySelectorAll("[data-back]"),function(e){e.textContent=t("back")})}
 function render(){
- applyStatic();
+ applyStatic();applyPetMode();
  $("lang").value=S.lang;
  $("demoBar").hidden=!S.demo;if(S.demo){$("demoText").textContent="🧪 "+fmt(t("demoOn"),{s:S.demo});$("demoExit").textContent=t("demoExit")}
  if(SCREEN.indexOf("fam")===0){renderFamilyScreen();return}
@@ -188,6 +188,7 @@ function renderFamilyScreen(){
  $("maps").value=S.maps;fillVoices();$("voiceTest").textContent=t("voiceTest");
  seg("sizeSeg",["size1","size2","size3"],S.size-1,function(i){S.size=i+1;save();render()});
  seg("autoSeg",["on","off"],S.autoSpeak?0:1,function(i){S.autoSpeak=i===0;save();render()});
+ seg("petSeg",["petOn","petOff"],S.petQuiet?1:0,function(i){S.petQuiet=i===1;save();render()});
  var standalone=isStandalone();
  $("installTxt").textContent=standalone?t("installed"):(location.protocol==="file:"?t("installFile")+" ":"")+t("installIOS")+" "+t("installAnd");
  $("installBtn").hidden=!installEvt||standalone;$("installBtn").textContent=t("installBtn")}
@@ -318,9 +319,9 @@ for(var _m in T3)Object.assign(T[_m],T3[_m]);
 
 /* Mimi (绵绵), a fluffy little sheep who delivers reminders: friendlier than a plain alert, and on-theme for sleep */
 var T5={
-zh:{nudgeCheck:"早上好～今天的早晨打卡还没做哦。",nudgeTodo:"今天还有 {n} 件事，绵绵陪你一起做！",goCheck:"🌅 去打卡",goTodo:"☑️ 去看看",petTodo:"还有 {n} 件，慢慢来～",petDone:"全部做完啦，真棒！🎉",petNone:"家人还没写今天要做的事。",petTap:"点我，绵绵说给你听",petHi:["你好呀！今天也要开开心心的！","绵绵在这里陪着你～","记得喝点水哦！","你今天真好看！","有事就按“打给家人”哦。"]},
-en:{nudgeCheck:"Good morning! Your morning check-in isn't done yet.",nudgeTodo:"{n} things left today. Mimi will do them with you!",goCheck:"🌅 Do check-in",goTodo:"☑️ Take a look",petTodo:"{n} left. Take your time.",petDone:"All done. Wonderful! 🎉",petNone:"Family hasn't added today's list yet.",petTap:"Tap Mimi to hear it",petHi:["Hello! Have a happy day!","Mimi is right here with you.","Remember to drink some water!","You look lovely today!","Need help? Tap “Call family”."]},
-es:{nudgeCheck:"¡Buenos días! Aún falta el chequeo de la mañana.",nudgeTodo:"Quedan {n} cosas hoy. ¡Mimí te acompaña!",goCheck:"🌅 Hacer chequeo",goTodo:"☑️ Ver la lista",petTodo:"Faltan {n}. Sin prisa.",petDone:"¡Todo listo, muy bien! 🎉",petNone:"La familia aún no agregó tareas.",petTap:"Toca a Mimí para escuchar",petHi:["¡Hola! ¡Que tengas un día feliz!","Mimí está aquí contigo.","¡Recuerda tomar agua!","¡Qué bien te ves hoy!","¿Necesitas ayuda? Toca “Llamar a mi familia”."]}};
+zh:{nudgeCheck:"早上好～今天的早晨打卡还没做哦。",nudgeTodo:"今天还有 {n} 件事，绵绵陪你一起做！",goCheck:"🌅 去打卡",goTodo:"☑️ 去看看",petTodo:"还有 {n} 件，慢慢来～",petDone:"全部做完啦，真棒！🎉",petNone:"家人还没写今天要做的事。",petTap:"点我，绵绵说给你听",petTogQuiet:"🤫 安静",petTogDance:"🎵 跳舞",petMode:"小羊绵绵",petOn:"🎵 跳舞、点了说话",petOff:"🤫 安静",petHi:["你好呀！今天也要开开心心的！","绵绵在这里陪着你～","记得喝点水哦！","你今天真好看！","有事就按“打给家人”哦。"]},
+en:{nudgeCheck:"Good morning! Your morning check-in isn't done yet.",nudgeTodo:"{n} things left today. Mimi will do them with you!",goCheck:"🌅 Do check-in",goTodo:"☑️ Take a look",petTodo:"{n} left. Take your time.",petDone:"All done. Wonderful! 🎉",petNone:"Family hasn't added today's list yet.",petTap:"Tap Mimi to hear it",petTogQuiet:"🤫 Quiet",petTogDance:"🎵 Dance",petMode:"Mimi the sheep",petOn:"🎵 Dances, talks when tapped",petOff:"🤫 Quiet",petHi:["Hello! Have a happy day!","Mimi is right here with you.","Remember to drink some water!","You look lovely today!","Need help? Tap “Call family”."]},
+es:{nudgeCheck:"¡Buenos días! Aún falta el chequeo de la mañana.",nudgeTodo:"Quedan {n} cosas hoy. ¡Mimí te acompaña!",goCheck:"🌅 Hacer chequeo",goTodo:"☑️ Ver la lista",petTodo:"Faltan {n}. Sin prisa.",petDone:"¡Todo listo, muy bien! 🎉",petNone:"La familia aún no agregó tareas.",petTap:"Toca a Mimí para escuchar",petTogQuiet:"🤫 Callada",petTogDance:"🎵 Bailar",petMode:"Mimí la oveja",petOn:"🎵 Baila y habla al tocarla",petOff:"🤫 Callada",petHi:["¡Hola! ¡Que tengas un día feliz!","Mimí está aquí contigo.","¡Recuerda tomar agua!","¡Qué bien te ves hoy!","¿Necesitas ayuda? Toca “Llamar a mi familia”."]}};
 for(var _n in T5)Object.assign(T[_n],T5[_n]);
 var PET_INK="#5B4636";
 function petWool(c,w){return c.map(function(a){return '<circle cx="'+a[0]+'" cy="'+a[1]+'" r="'+(a[2]+w)+'"/>'}).join("")}
@@ -351,9 +352,15 @@ function setPet(id,prop,happy,cheer){var p=$(id);p.innerHTML=mascot(prop,happy);
 /* Tap Mimi and she reads her speech bubble aloud; on the reminder card she plays the family recording if there is one */
 var petTalk={};
 function petSay(id){
- var p=$(id);if(!p)return;buzz();
+ var p=$(id);if(!p||S.petQuiet)return;buzz();
  p.classList.remove("talk","cheer");void p.offsetWidth;p.classList.add("talk");setTimeout(function(){p.classList.remove("talk")},950);
  if(petTalk[id])petTalk[id]();else speak(p.parentNode.querySelector("p").textContent)}
+/* One switch for Mimi: dancing + talking, or quiet (still and silent). Reminders still speak either way. */
+function applyPetMode(){
+ document.body.classList.toggle("petQuiet",!!S.petQuiet);
+ var b=$("petTog");b.textContent=S.petQuiet?t("petTogDance"):t("petTogQuiet");b.setAttribute("aria-pressed",!!S.petQuiet);
+ Array.prototype.forEach.call(document.querySelectorAll(".pet"),function(p){if(S.petQuiet)p.removeAttribute("role");else p.setAttribute("role","button")})}
+$("petTog").onclick=function(){buzz();S.petQuiet=!S.petQuiet;save();$("homeBub").hidden=true;try{speechSynthesis.cancel()}catch(e){}render()};
 /* Home Mimi: tap for a little cheerful line in a bubble */
 var bubTimer=null;
 petTalk.homePet=function(){var L=t("petHi"),x=L[Math.floor(Math.random()*L.length)],b=$("homeBub");

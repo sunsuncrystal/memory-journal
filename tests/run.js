@@ -99,6 +99,17 @@ function ok(c, msg) { if (!c) throw new Error(msg || 'assertion failed'); }
     const said = await pg.evaluate(() => { let s = null; const o = speak; speak = x => { s = x; }; $('todoPet').click(); speak = o; return s; });
     eq(said, await pg.$eval('#todoSay', e => e.textContent));
   });
+  await test('quiet button: Mimi stops dancing and stays silent when tapped; tap again to dance', async () => {
+    const q = await phone([2026, 9, 21, 15, 0]);
+    await q.evaluate(() => { speak = x => { window.SAID = (window.SAID || []).concat(x); }; });
+    await q.click('#petTog'); await wait(200);
+    const r = await q.evaluate(() => { $('homePet').click(); return [S.petQuiet, getComputedStyle($('homePet').querySelector('svg')).animationName, (window.SAID || []).length]; });
+    eq(r, [true, 'none', 0]);
+    await q.click('#petTog'); await wait(200);
+    const r2 = await q.evaluate(() => { $('homePet').click(); return [S.petQuiet, getComputedStyle($('homePet').querySelector('svg')).animationName !== 'none', (window.SAID || []).length]; });
+    eq(r2, [false, true, 1]);
+    eq(q.errors, []);
+  });
   await test('holding "Family" for 2 seconds opens the family hub (and the release does not tap a row)', async () => {
     await pg.evaluate(() => show('home'));
     await pg.$eval('#gate', e => e.scrollIntoView()); await wait(100);

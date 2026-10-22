@@ -66,6 +66,11 @@ h3{font-size:1rem;margin:.8rem 0 .3rem}
 .hpet{position:relative;flex:none}
 .hpet[hidden]{display:none}
 .hpet .pet{width:92px;height:92px}
+.petTog{display:block;width:100%;min-height:2.2rem;padding:.15rem .3rem;margin-top:2px;font-size:.78rem;border-width:2px;border-radius:14px;white-space:nowrap}
+/* quiet Mimi: stands still, no speaker badge, taps do nothing */
+body.petQuiet .pet svg{animation:none!important}
+body.petQuiet .pet::after{display:none}
+body.petQuiet .pet{cursor:default}
 .pet.dance svg{animation:dance 2.4s ease-in-out infinite}
 @keyframes dance{0%,100%{transform:rotate(0) translateY(0)}15%{transform:rotate(-9deg) translateY(-6px)}30%{transform:rotate(0) translateY(0)}45%{transform:rotate(9deg) translateY(-6px)}60%{transform:rotate(0) translateY(0)}75%{transform:translateY(-10px) scale(1.04)}}
 .hbub{position:absolute;right:100%;top:50%;transform:translateY(-50%);margin-right:2px;width:max-content;max-width:min(230px,62vw);background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:16px;padding:8px 12px;font-weight:800;font-size:1rem;line-height:1.35;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.12)}
@@ -223,7 +228,7 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
  <div class="date" id="date"></div>
  <div class="hdr">
   <div class="hl"><div class="clock" id="clock"></div><p class="plan" id="plan"></p></div>
-  <div class="hpet" id="homePetBox"><span class="hbub" id="homeBub" hidden></span><span class="pet dance" id="homePet" role="button" tabindex="0"></span></div>
+  <div class="hpet" id="homePetBox"><span class="hbub" id="homeBub" hidden></span><span class="pet dance" id="homePet" role="button" tabindex="0"></span><button class="petTog" id="petTog"></button></div>
  </div>
  <div class="pair">
   <button class="big main" id="home"></button>
@@ -435,6 +440,7 @@ details summary{cursor:pointer;font-weight:700;min-height:2.4rem;font-size:1rem}
  <div class="card">
   <p class="lbl" data-t="sizeL" style="margin-top:0"></p><div class="seg" id="sizeSeg"></div>
   <p class="lbl" data-t="autoL"></p><div class="seg" id="autoSeg" style="grid-template-columns:1fr 1fr"></div>
+  <p class="lbl" data-t="petMode"></p><div class="seg" id="petSeg" style="grid-template-columns:1fr 1fr"></div>
  </div>
  <div class="card">
   <p class="lbl" id="voiceLabel" style="margin-top:0"></p>
